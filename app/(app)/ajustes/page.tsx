@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Screen, ScreenHeader } from "@/components/layout/Screen";
 import { SignOutButton } from "@/components/auth/SignOutButton";
+import { MaintenanceList } from "@/components/ajustes/MaintenanceList";
 import { Card } from "@/components/ui/Card";
+import { loadMaintenanceItems } from "@/lib/profile/maintenance-server";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Ajustes" };
@@ -12,6 +14,7 @@ export default async function SettingsPage() {
   const { data } = await supabase.auth.getClaims();
   const email =
     typeof data?.claims?.email === "string" ? data.claims.email : null;
+  const maintenance = await loadMaintenanceItems();
   return (
     <Screen>
       <ScreenHeader title="Ajustes" />
@@ -27,6 +30,7 @@ export default async function SettingsPage() {
       >
         Refazer as primeiras perguntas
       </Link>
+      <MaintenanceList items={maintenance} />
       <p className="px-1 text-[13px] font-semibold text-muted">
         Perfil, carro, apps e exportar dados chegam no M8.
       </p>
