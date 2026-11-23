@@ -23,14 +23,12 @@ import {
 import { EXPENSE_LABELS } from "@/lib/day/form";
 import { localDb } from "@/lib/local/db";
 import { listLocalDays } from "@/lib/local/days";
-import { elapsedRange, summarizeRange } from "@/lib/metrics/period";
+import { summarizeRange } from "@/lib/metrics/period";
 import type { ExpenseCategory, PlatformSetting } from "@/lib/metrics/types";
 import {
-  estimateKmPerYear,
-  ownMaintenancePerKm,
-  perKmBreakdown,
-  vehicleReserve,
-} from "@/lib/metrics/vehicle";
+  RESERVE_HISTORY_DAYS,
+  monthReserve,
+} from "@/lib/metrics/month-reserve";
 import { formatBRL, formatPercent } from "@/lib/money";
 import type { VehicleContext } from "@/lib/profile/vehicle-server";
 import { VehicleSheet } from "./VehicleSheet";
@@ -60,7 +58,6 @@ const CATEGORY_TEXT = {
   suv: "SUV",
   other: "",
 } as const;
-const HISTORY_DAYS = 90;
 
 export function Lucro({ userId, platformSettings, vehicleContext }: Props) {
   const [todayDate] = useState<LocalDate>(() => today());
@@ -71,7 +68,7 @@ export function Lucro({ userId, platformSettings, vehicleContext }: Props) {
   const [pending, startTransition] = useTransition();
 
   const month = useMemo(() => monthRange(todayDate), [todayDate]);
-  const historyStart = addDays(todayDate, -HISTORY_DAYS);
+  const historyStart = addDays(todayDate, -RESERVE_HISTORY_DAYS);
   const from = historyStart < month.start ? historyStart : month.start;
   const days = useLiveQuery(
     () => listLocalDays(localDb(), userId, { start: from, end: month.end }),
@@ -84,9 +81,6 @@ export function Lucro({ userId, platformSettings, vehicleContext }: Props) {
       (d) => d.date >= month.start && d.date <= month.end,
     );
     const summary = summarizeRange(days, month, platformSettings, todayDate);
-    const history = days.filter(
-      (d) => d.date >= historyStart && d.date <= todayDate,
-    );
     const byCategory = new Map<ExpenseCategory, number>();
     for (const x of monthDays.flatMap((d) => d.expenses)) {
       byCategory.set(
@@ -94,21 +88,9 @@ export function Lucro({ userId, platformSettings, vehicleContext }: Props) {
         (byCategory.get(x.category) ?? 0) + x.amountCents,
       );
     }
-    const perKm = perKmBreakdown(ctx.vehicle, ctx.reference, {
-      currentYear: Number(todayDate.slice(0, 4)),
-      kmPerYear: estimateKmPerYear(history, ctx.typicalDaysPerMonth),
-      ownMaintenancePerKm: ownMaintenancePerKm(history),
-    });
-    const reserve = vehicleReserve({
-      days: monthDays,
-      netCents: summary.netCents,
-      elapsed: elapsedRange(month, todayDate),
-      ownership: ctx.ownership,
-      vehicle: ctx.vehicle,
-      perKm,
-    });
+    const { reserve } = monthReserve(days, todayDate, ctx, platformSettings);
     return { summary, byCategory, reserve };
-  }, [days, ctx, platformSettings, todayDate, month, historyStart]);
+  }, [days, ctx, platformSettings, todayDate, month]);
 
   const header = (
     <header className="flex items-center gap-2">
