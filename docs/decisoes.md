@@ -5,6 +5,7 @@ Formato: decisão · motivo. Revise e me avise se quiser mudar alguma.
 ## Respostas do dono (23/11/2026)
 - Repositório: `gustavobino/km-app` (privado).
 - Supabase: projeto `bguifsyabtcvinzaajcy`. A região não pode ser trocada depois de criado; segue como está (só afeta latência, não funcionalidade).
+- Supabase configurado por API (o dono passou um access token pelo formulário seguro do ambiente): tabelas criadas, Redirect URL `http://localhost:3000/**` liberada. O app usa a chave **publishable** (`sb_publishable_…`), o formato novo de chave pública do Supabase, no lugar da "anon" antiga.
 - Login com Google: **depois**. M1 entrega só link por e-mail.
 - Preço: **R$ 17,90** (`PRICE_BRL_CENTS=1790`). Conta do Mercado Pago de **pessoa física**.
 - Responsável pelos dados (LGPD) nos Termos/Privacidade: o dono, **pessoa física**. E-mail público de contato: pendente (pedir no M8).

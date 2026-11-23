@@ -44,4 +44,18 @@ Testado em `db/rls.test.ts` (roda com `pnpm test`, usando PGlite com um "shim" m
 
 ## Como aplicar no Supabase
 
-Até o M1: no painel do Supabase, **SQL Editor** → colar `db/migrations/0001_init.sql` → Run; depois `db/seed.sql` → Run. Nunca aplicar `db/test-utils/supabase-shim.sql` no projeto real.
+Cada migration é aplicada uma vez, em ordem, com `scripts/supabase-sql.sh` (usa a Management API do Supabase e um *access token* da conta):
+
+```bash
+SUPABASE_ACCESS_TOKEN=sbp_... scripts/supabase-sql.sh db/migrations/0001_init.sql
+```
+
+Alternativa manual: painel do Supabase → **SQL Editor** → colar o arquivo → Run.
+
+Nunca aplicar `db/test-utils/supabase-shim.sql` no projeto real.
+
+### Histórico de aplicação (projeto `bguifsyabtcvinzaajcy`)
+
+| Data | Arquivo |
+|---|---|
+| 23/11/2026 | `0001_init.sql`, `seed.sql` |
