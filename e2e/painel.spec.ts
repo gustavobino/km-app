@@ -107,11 +107,9 @@ test("today, week and month with the example numbers", async ({ page }) => {
     page.getByRole("img", { name: "22% a mais que ontem" }),
   ).toBeVisible();
   // Uber × 99 per hour only uses hours informed per app: 212,50/5 h and 98,00/3 h.
-  const apps = page
-    .locator("section")
-    .filter({
-      has: page.getByRole("heading", { name: "Uber × 99, por hora" }),
-    });
+  const apps = page.locator("section").filter({
+    has: page.getByRole("heading", { name: "Uber × 99, por hora" }),
+  });
   await expect(apps).toContainText("R$ 42,50");
   await expect(apps).toContainText("R$ 32,67");
 
@@ -164,11 +162,9 @@ test("without hours per app shows each app's share instead of per hour", async (
   ]);
   await signIn(page, user, "/painel");
   await page.getByRole("button", { name: "Hoje" }).click();
-  const apps = page
-    .locator("section")
-    .filter({
-      has: page.getByRole("heading", { name: "Quanto veio de cada app" }),
-    });
+  const apps = page.locator("section").filter({
+    has: page.getByRole("heading", { name: "Quanto veio de cada app" }),
+  });
   await expect(apps).toContainText("75%");
   await expect(apps).toContainText("25%");
   // No hours/km: rates hidden with a gentle hint; no goal card without a goal.

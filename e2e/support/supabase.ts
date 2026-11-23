@@ -136,17 +136,15 @@ export async function seedDays(user: TestUser, days: SeedDay[]) {
       .single();
     if (error) throw error;
     if (d.earnings?.length) {
-      const { error: e } = await db
-        .from("earnings")
-        .insert(
-          d.earnings.map((x) => ({
-            ...x,
-            label: x.label ?? null,
-            minutes: x.minutes ?? null,
-            user_id: user.id,
-            day_id: data.id,
-          })),
-        );
+      const { error: e } = await db.from("earnings").insert(
+        d.earnings.map((x) => ({
+          ...x,
+          label: x.label ?? null,
+          minutes: x.minutes ?? null,
+          user_id: user.id,
+          day_id: data.id,
+        })),
+      );
       if (e) throw e;
     }
     if (d.expenses?.length) {
@@ -166,5 +164,16 @@ export async function setProfile(
 ) {
   const db = await adminClient();
   const { error } = await db.from("profiles").update(patch).eq("id", user.id);
+  if (error) throw error;
+}
+
+export async function setVehicle(
+  user: TestUser,
+  values: Record<string, unknown>,
+) {
+  const db = await adminClient();
+  const { error } = await db
+    .from("vehicles")
+    .upsert({ user_id: user.id, ...values }, { onConflict: "user_id" });
   if (error) throw error;
 }
