@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Simulador de meta</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}
+input{font-family:inherit;color:inherit}
+input:focus-visible,a:focus-visible{outline:2px solid #101828;outline-offset:2px}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;background:#F4F3EE;font-family:Manrope,system-ui,sans-serif;color:#101828;display:flex;flex-direction:column;overflow:hidden">
+  <main style="flex:1;min-height:0;padding:24px 20px 12px;display:flex;flex-direction:column;gap:12px">
+    <header>
+      <h1 style="margin:0;font-family:'Bricolage Grotesque',Manrope,sans-serif;font-size:30px;line-height:1.1;font-weight:800;letter-spacing:-0.03em">Simulador de meta</h1>
+      <div style="font-size:13px;font-weight:600;color:#5B6472;margin-top:4px">Calculado com o seu histórico dos últimos 3 meses</div>
+    </header>
+
+    <section style="background:#fff;border:1px solid #E6E3DA;border-radius:20px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))">
+      <div style="padding:14px 16px;border-right:1px solid #EEEBE3">
+        <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#5B6472">Hoje você sobra</div>
+        <div style="font-family:'Bricolage Grotesque',Manrope,sans-serif;font-size:26px;font-weight:800;margin-top:4px">R$ 6.000</div>
+        <div style="font-size:13px;font-weight:600;color:#5B6472">R$ 31,25 por hora</div>
+      </div>
+      <div style="padding:14px 16px">
+        <label for="alvo" style="display:block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#5B6472">Quero chegar a</label>
+        <div style="display:flex;align-items:baseline;gap:4px;margin-top:4px">
+          <span aria-hidden="true" style="font-size:16px;font-weight:700;color:#5B6472">R$</span>
+          <input id="alvo" inputmode="numeric" value="{{alvo}}" onChange="{{setAlvo}}" style="width:90px;border:0;background:transparent;font-family:'Bricolage Grotesque',Manrope,sans-serif;font-size:26px;font-weight:800;padding:0;height:36px">
+        </div>
+        <div style="font-size:13px;font-weight:600;color:#5B6472">por mês</div>
+      </div>
+    </section>
+
+    <section style="background:#fff;border:1px solid #E6E3DA;border-radius:20px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))">
+      <div style="padding:14px 16px;border-right:1px solid #EEEBE3">
+        <label for="horas" style="display:block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#5B6472">Horas por dia</label>
+        <div style="display:flex;align-items:baseline;gap:6px;margin-top:2px">
+          <input id="horas" inputmode="decimal" value="{{horas}}" onChange="{{setHoras}}" style="width:60px;border:0;background:transparent;font-family:'Bricolage Grotesque',Manrope,sans-serif;font-size:30px;font-weight:800;padding:0;height:44px">
+          <span aria-hidden="true" style="font-weight:700;color:#5B6472">h</span>
+        </div>
+      </div>
+      <div style="padding:14px 16px">
+        <label for="dias" style="display:block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#5B6472">Dias por mês</label>
+        <div style="display:flex;align-items:baseline;gap:6px;margin-top:2px">
+          <input id="dias" inputmode="numeric" value="{{dias}}" onChange="{{setDias}}" style="width:60px;border:0;background:transparent;font-family:'Bricolage Grotesque',Manrope,sans-serif;font-size:30px;font-weight:800;padding:0;height:44px">
+          <span aria-hidden="true" style="font-weight:700;color:#5B6472">dias</span>
+        </div>
+      </div>
+    </section>
+
+    <section aria-live="polite" style="background:#C6F135;color:#101828;border-radius:28px;padding:18px 20px 20px">
+      <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#26340A">Para chegar lá, sobrar por dia</div>
+      <div style="font-family:'Bricolage Grotesque',Manrope,sans-serif;font-weight:800;letter-spacing:-0.035em;font-size:56px;line-height:1.05;color:#101828;margin-top:2px">{{porDia}}</div>
+      <div style="font-size:15px;font-weight:700;margin-top:4px">{{porHora}} por hora <span style="font-weight:700;color:#26340A">· {{pct}}</span></div>
+    </section>
+
+    <section style="background:#fff;border:1px solid #E6E3DA;border-radius:20px;padding:14px 16px 12px">
+      <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#5B6472;margin-bottom:4px">Caminhos para chegar lá</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;min-height:48px;border-top:1px solid #EEEBE3;margin-top:6px">
+        <div><div style="font-size:15px;font-weight:700">Só mais horas</div><div style="font-size:12px;font-weight:600;color:#5B6472">{{n1}}</div></div>
+        <span style="font-family:'Bricolage Grotesque',Manrope,sans-serif;font-size:17px;font-weight:800">{{p1}}</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;min-height:48px;border-top:1px solid #EEEBE3">
+        <div><div style="font-size:15px;font-weight:700">Ganhar 20% mais por hora</div><div style="font-size:12px;font-weight:600;color:#5B6472">com os melhores horários</div></div>
+        <span style="font-family:'Bricolage Grotesque',Manrope,sans-serif;font-size:17px;font-weight:800">{{p2}}</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;min-height:48px;border-top:1px solid #EEEBE3">
+        <div><div style="font-size:15px;font-weight:700">Isso + 2 dias a mais</div><div style="font-size:12px;font-weight:600;color:#5B6472">o caminho mais equilibrado</div></div>
+        <span style="font-family:'Bricolage Grotesque',Manrope,sans-serif;font-size:17px;font-weight:800;color:#101828;background:#C6F135;border-radius:10px;padding:4px 10px">{{p3}}</span>
+      </div>
+      <div style="background:#F4F3EE;border-radius:12px;padding:10px 12px;font-size:13px;font-weight:600;color:#3D4654;margin-top:8px">{{etapa}}</div>
+    </section>
+  </main>
+
+  <nav aria-label="Navegação principal" style="height:76px;box-sizing:border-box;background:#fff;border-top:1px solid #E6E3DA;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:8px 8px 0">
+    <a href="Main.dc.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:600;color:#5B6472">
+      <span style="width:56px;height:30px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>Registrar</a>
+    <a href="Painel.dc.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:600;color:#5B6472">
+      <span style="width:56px;height:30px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></span>Painel</a>
+    <a href="Simulador.dc.html" aria-current="page" style="display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:800;color:#101828">
+      <span style="width:56px;height:30px;border-radius:15px;background:#101828;color:#fff;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 8h10M18 8h2M4 16h2M10 16h10"/><circle cx="16" cy="8" r="2"/><circle cx="8" cy="16" r="2"/></svg></span>Simulador</a>
+    <a href="Insights.dc.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:600;color:#5B6472">
+      <span style="width:56px;height:30px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></svg></span>Insights</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { alvo: '10.000', horas: '8', dias: '24' };
+  }
+  num(s) {
+    const n = parseFloat(String(s).replace(/\./g, '').replace(',', '.'));
+    return isNaN(n) ? 0 : n;
+  }
+  brl(n) {
+    return 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  hm(h) {
+    const m = Math.round(h * 60);
+    return Math.floor(m / 60) + 'h' + String(m % 60).padStart(2, '0');
+  }
+  renderVals() {
+    const s = this.state;
+    const base = 31.25;
+    const alvo = this.num(s.alvo);
+    const horas = this.num(s.horas);
+    const dias = this.num(s.dias);
+    const ok = alvo > 0 && horas > 0 && dias > 0;
+    const porDia = ok ? alvo / dias : 0;
+    const porHora = ok ? alvo / (horas * dias) : 0;
+    const pctN = Math.round((porHora / base - 1) * 100);
+    const h1 = ok ? alvo / base / dias : 0;
+    const h2 = ok ? alvo / (base * 1.2) / dias : 0;
+    const h3 = ok ? alvo / (base * 1.2) / (dias + 2) : 0;
+    const meio = (6000 + alvo) / 2;
+    const hMeio = ok ? meio / base / dias : 0;
+    return {
+      alvo: s.alvo, horas: s.horas, dias: s.dias,
+      setAlvo: (e) => this.setState({ alvo: e.target.value }),
+      setHoras: (e) => this.setState({ horas: e.target.value }),
+      setDias: (e) => this.setState({ dias: e.target.value }),
+      porDia: ok ? this.brl(porDia) : '—',
+      porHora: ok ? this.brl(porHora) : '—',
+      pct: ok ? (pctN >= 0 ? pctN + '% acima do seu ritmo' : 'abaixo do seu ritmo atual') : 'preencha os campos',
+      p1: ok ? this.hm(h1) + ' por dia' : '—',
+      n1: h1 > 12 ? 'carga alta: dá para fazer melhor' : 'no seu ritmo de hoje',
+      p2: ok ? this.hm(h2) + ' por dia' : '—',
+      p3: ok ? this.hm(h3) + ' por dia' : '—',
+      etapa: ok ? 'Sem pressa: no meio do caminho, ' + this.brl(meio).replace(',00', '') + ' por mês pedem ' + this.hm(hMeio) + ' por dia.' : ''
+    };
+  }
+}
+</script>
+</body>
+</html>

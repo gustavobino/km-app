@@ -1,0 +1,92 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "Artboard-trae.dc.html": {
+      "h": 600,
+      "handmade": true,
+      "page": "page-pp4k4d",
+      "title": "Artboard 1",
+      "w": 800,
+      "x": 0,
+      "y": 0
+    },
+    "Insights.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "5 · Insights",
+      "w": 390,
+      "x": 1880,
+      "y": 0
+    },
+    "Lucro.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "3 · Lucro líquido",
+      "w": 390,
+      "x": 940,
+      "y": 0
+    },
+    "Main.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "1 · Registrar o dia",
+      "w": 390,
+      "x": 0,
+      "y": 0
+    },
+    "Painel.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "2 · Painel",
+      "w": 390,
+      "x": 470,
+      "y": 0
+    },
+    "Simulador.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "4 · Simulador de meta",
+      "w": 390,
+      "x": 1410,
+      "y": 0
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-11-23T21:58:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "t1": {
+      "kind": "title1",
+      "maxW": 2270,
+      "text": "Fechou · telas de exemplo",
+      "w": 240,
+      "x": 0,
+      "y": -260
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Painel.dc.html",
+    "Lucro.dc.html",
+    "Simulador.dc.html",
+    "Insights.dc.html",
+    "Artboard-trae.dc.html"
+  ],
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Page 1"
+    },
+    {
+      "id": "page-pp4k4d",
+      "name": "Page 2"
+    }
+  ],
+  "title": "Fechou — telas de exemplo do app para motoristas"
+}

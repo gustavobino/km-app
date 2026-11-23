@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Painel de métricas</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;color:inherit}
+button:focus-visible,a:focus-visible{outline:2px solid #101828;outline-offset:2px}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;background:#F4F3EE;font-family:Manrope,system-ui,sans-serif;color:#101828;display:flex;flex-direction:column;overflow:hidden">
+  <main style="flex:1;min-height:0;padding:24px 20px 12px;display:flex;flex-direction:column;gap:12px">
+    <header style="display:flex;align-items:flex-end;justify-content:space-between">
+      <h1 style="margin:0;font-family:'Bricolage Grotesque',Manrope,sans-serif;font-size:30px;line-height:1.1;font-weight:800;letter-spacing:-0.03em">Painel</h1>
+      <span style="font-size:13px;font-weight:600;color:#5B6472;padding-bottom:3px">17 a 23 de novembro</span>
+    </header>
+
+    <div role="group" aria-label="Período" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;background:#E9E7DF;border-radius:16px;padding:4px">
+      <button type="button" aria-pressed="false" style="height:44px;border:0;border-radius:12px;background:transparent;font-size:14px;font-weight:700;color:#5B6472">Hoje</button>
+      <button type="button" aria-pressed="true" style="height:44px;border:0;border-radius:12px;background:#101828;color:#fff;font-size:14px;font-weight:800">Semana</button>
+      <button type="button" aria-pressed="false" style="height:44px;border:0;border-radius:12px;background:transparent;font-size:14px;font-weight:700;color:#5B6472">Mês</button>
+    </div>
+
+    <section style="background:#C6F135;color:#101828;border-radius:28px;padding:18px 20px 4px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <span style="font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#26340A">Sobrou no bolso na semana</span>
+        <span aria-label="8% a mais que na semana passada" style="flex:none;height:28px;padding:0 10px;border-radius:14px;background:#101828;color:#C6F135;font-size:12px;font-weight:800;display:flex;align-items:center;gap:4px">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3l10 18H2z"/></svg>8%</span>
+      </div>
+      <div style="margin-top:6px;font-family:'Bricolage Grotesque',Manrope,sans-serif;font-weight:800;letter-spacing:-0.035em;line-height:1;display:flex;align-items:baseline">
+        <span style="font-size:26px;font-weight:700;margin-right:6px;letter-spacing:-0.01em">R$</span><span style="font-size:60px">1.528</span><span style="font-size:32px">,00</span>
+      </div>
+      <div style="font-size:14px;font-weight:600;color:#26340A;margin-top:6px">Ganhos R$ 2.140,00 · gastos R$ 612,00</div>
+      <div role="img" aria-label="Quanto sobrou por dia. O melhor dia foi sábado, com R$ 330" style="display:flex;align-items:flex-end;gap:8px;height:56px;margin-top:12px">
+        <div style="flex:1;height:28px;border-radius:8px;background:#5C7A14;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;box-sizing:border-box">Seg</div>
+        <div style="flex:1;height:30px;border-radius:8px;background:#5C7A14;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;box-sizing:border-box">Ter</div>
+        <div style="flex:1;height:28px;border-radius:8px;background:#5C7A14;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;box-sizing:border-box">Qua</div>
+        <div style="flex:1;height:34px;border-radius:8px;background:#5C7A14;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;box-sizing:border-box">Qui</div>
+        <div style="flex:1;height:44px;border-radius:8px;background:#5C7A14;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;box-sizing:border-box">Sex</div>
+        <div style="flex:1;height:56px;border-radius:8px;background:#101828;color:#C6F135;font-size:12px;font-weight:800;display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;box-sizing:border-box">Sáb</div>
+        <div style="flex:1;height:46px;border-radius:8px;background:#5C7A14;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;box-sizing:border-box">Dom</div>
+      </div>
+      <a href="Lucro.dc.html" style="margin-top:12px;height:48px;border-top:1px solid rgba(16,24,40,.18);display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:800">Ver o lucro líquido do mês
+        <span aria-hidden="true" style="width:32px;height:32px;border-radius:16px;background:#101828;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C6F135" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+    </section>
+
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+      <div style="background:#fff;border:1px solid #E6E3DA;border-radius:20px;padding:12px 16px">
+        <div style="font-size:12px;font-weight:700;color:#5B6472">Ganho por hora</div>
+        <div style="font-family:'Bricolage Grotesque',Manrope,sans-serif;font-size:30px;line-height:1.1;font-weight:800;letter-spacing:-0.03em">R$ 41,15</div>
+        <div style="font-size:12px;font-weight:600;color:#5B6472">em 52 h rodadas</div>
+      </div>
+      <div style="background:#fff;border:1px solid #E6E3DA;border-radius:20px;padding:12px 16px">
+        <div style="font-size:12px;font-weight:700;color:#5B6472">Ganho por km</div>
+        <div style="font-family:'Bricolage Grotesque',Manrope,sans-serif;font-size:30px;line-height:1.1;font-weight:800;letter-spacing:-0.03em">R$ 2,43</div>
+        <div style="font-size:12px;font-weight:600;color:#5B6472">em 880 km rodados</div>
+      </div>
+    </div>
+
+    <section style="background:#fff;border:1px solid #E6E3DA;border-radius:20px;padding:14px 16px 16px">
+      <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#5B6472;margin-bottom:10px">Uber × 99, por hora</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="width:44px;font-size:14px;font-weight:800">Uber</span>
+        <div style="flex:1;height:12px;border-radius:6px;background:#EEEBE3"><div style="width:100%;height:12px;border-radius:6px;background:#101828"></div></div>
+        <span style="width:64px;text-align:right;font-size:14px;font-weight:800">R$ 43,09</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="width:44px;font-size:14px;font-weight:800">99</span>
+        <div style="flex:1;height:12px;border-radius:6px;background:#EEEBE3"><div style="width:87%;height:12px;border-radius:6px;background:#7C8798"></div></div>
+        <span style="width:64px;text-align:right;font-size:14px;font-weight:800">R$ 37,50</span>
+      </div>
+    </section>
+
+    <section style="background:#C6F135;color:#101828;border-radius:24px;padding:14px 16px 16px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px">
+        <span style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#26340A">Meta do mês · R$ 8.000</span>
+        <span style="font-family:'Bricolage Grotesque',Manrope,sans-serif;font-size:26px;font-weight:800;color:#101828">80%</span>
+      </div>
+      <div role="img" aria-label="80% da meta do mês" style="height:12px;border-radius:6px;background:rgba(16,24,40,.2)"><div style="width:80%;height:12px;border-radius:6px;background:#101828"></div></div>
+      <div style="font-size:13px;font-weight:700;color:#26340A;margin-top:10px">Faltam R$ 1.600 · cerca de R$ 229 por dia nos 7 dias que restam</div>
+    </section>
+  </main>
+
+  <nav aria-label="Navegação principal" style="height:76px;box-sizing:border-box;background:#fff;border-top:1px solid #E6E3DA;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:8px 8px 0">
+    <a href="Main.dc.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:600;color:#5B6472">
+      <span style="width:56px;height:30px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>Registrar</a>
+    <a href="Painel.dc.html" aria-current="page" style="display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:800;color:#101828">
+      <span style="width:56px;height:30px;border-radius:15px;background:#101828;color:#fff;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></span>Painel</a>
+    <a href="Simulador.dc.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:600;color:#5B6472">
+      <span style="width:56px;height:30px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 8h10M18 8h2M4 16h2M10 16h10"/><circle cx="16" cy="8" r="2"/><circle cx="8" cy="16" r="2"/></svg></span>Simulador</a>
+    <a href="Insights.dc.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:600;color:#5B6472">
+      <span style="width:56px;height:30px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></svg></span>Insights</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>
