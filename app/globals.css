@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+/*
+ * Km+ design tokens — single source of truth for colors, type, radii and sizes.
+ * Tailwind v4 reads tokens from @theme (it replaces tailwind.config.js).
+ * See CLAUDE.md › "Design system (tokens)" and docs/decisoes.md.
+ */
+@theme {
+  /* Reset Tailwind's default palette: only Km+ colors exist. */
+  --color-*: initial;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-white: #ffffff;
+
+  --color-bg: #f4f3ee;
+  --color-surface: #ffffff;
+  --color-border: #e6e3da;
+  --color-divider: #eeebe3;
+  --color-ink: #101828;
+  --color-muted: #5b6472;
+  --color-lime: #c6f135;
+  --color-lime-text: #26340a;
+  --color-lime-bar: #5c7a14;
+  --color-lime-track: rgb(16 24 40 / 0.2);
+  --color-lime-divider: rgb(16 24 40 / 0.18);
+  --color-grey-bar: #7c8798;
+  --color-track: #eeebe3;
+  --color-segment-bg: #e9e7df;
+  /* Extra tokens taken from the reference screens (docs/decisoes.md). */
+  --color-app-chip-bg: #eae8e0;
+  --color-chip-border: #cfccc0;
+  --color-note-text: #3d4654;
+
+  --font-sans: var(--font-manrope), system-ui, sans-serif;
+  --font-display: var(--font-bricolage), var(--font-manrope), sans-serif;
+
+  --text-label: 12px;
+  --text-label--letter-spacing: 0.06em;
+  --text-hero-currency: 26px;
+  --text-hero-int: 60px;
+  --text-hero-int-lg: 64px;
+  --text-hero-cents: 32px;
+  --text-hero-cents-lg: 34px;
+
+  --tracking-display: -0.03em;
+  --tracking-hero: -0.035em;
+  --tracking-label: 0.06em;
+
+  --radius-card: 20px;
+  --radius-hero: 28px;
+  --radius-hero-sm: 22px;
+  --radius-hero-md: 24px;
+  --radius-button: 16px;
+  --radius-chip: 22px;
+  --radius-segment: 16px;
+  --radius-segment-item: 12px;
+  --radius-bar: 6px;
+  --radius-pill: 15px;
+
+  --spacing-touch: 44px;
+  --spacing-tabbar: 76px;
+  --spacing-column: 480px;
+  --spacing-gap-card: 12px;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+  input,
+  button,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+  }
+}
+
+@utility font-display {
+  font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
+}
+
+/* Upper-case label: 12px, 700–800, .06em. */
+@utility label-caps {
+  font-size: var(--text-label);
+  font-weight: 700;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
