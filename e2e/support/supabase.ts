@@ -57,7 +57,7 @@ export async function adminClient(): Promise<SupabaseClient> {
 export type TestUser = { id: string; email: string };
 
 export async function createTestUser(
-  opts: { onboarded?: boolean } = {},
+  opts: { onboarded?: boolean; apps?: string[] } = {},
 ): Promise<TestUser> {
   const db = await adminClient();
   const email = `e2e-${randomUUID()}@example.com`;
@@ -69,7 +69,10 @@ export async function createTestUser(
   if (opts.onboarded) {
     const { error: e } = await db
       .from("profiles")
-      .update({ onboarding_completed_at: new Date().toISOString() })
+      .update({
+        onboarding_completed_at: new Date().toISOString(),
+        apps: opts.apps ?? [],
+      })
       .eq("id", data.user.id);
     if (e) throw e;
   }
