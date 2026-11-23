@@ -7,19 +7,36 @@
  * - Everything else (API, Supabase, payments): network only, never cached.
  * Bump VERSION to drop old caches.
  */
-const VERSION = "v2";
+const VERSION = "v3";
 const STATIC_CACHE = `kmplus-static-${VERSION}`;
 const PAGE_CACHE = `kmplus-pages-${VERSION}`;
 const APP_ROUTES = ["/registrar", "/painel", "/painel/lucro", "/simulador", "/insights"];
 const OFFLINE_FALLBACK = "/registrar";
 
+/** Hashed assets a page needs (scripts, styles, fonts), found in its HTML. */
+function assetsIn(html) {
+  const urls = new Set();
+  for (const match of html.matchAll(/["'(](\/_next\/static\/[^"')\s]+)/g)) urls.add(match[1]);
+  return [...urls];
+}
+
 async function precacheAppRoutes() {
-  const cache = await caches.open(PAGE_CACHE);
+  const pages = await caches.open(PAGE_CACHE);
+  const statics = await caches.open(STATIC_CACHE);
   await Promise.allSettled(
     APP_ROUTES.map(async (route) => {
       const response = await fetch(route, { credentials: "same-origin" });
       // Signed out → the server redirects to /entrar; never cache that as the page.
-      if (response.ok && !response.redirected) await cache.put(route, response);
+      if (!response.ok || response.redirected) return;
+      const html = await response.clone().text();
+      await pages.put(route, response);
+      await Promise.allSettled(
+        assetsIn(html).map(async (url) => {
+          if (await statics.match(url)) return;
+          const asset = await fetch(url);
+          if (asset.ok) await statics.put(url, asset);
+        }),
+      );
     }),
   );
 }
