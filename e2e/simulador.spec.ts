@@ -44,23 +44,19 @@ test("CLAUDE.md example: 6.000 in 192 h, goal 10.000 with 8 h × 24 days", async
   await expect(page.getByLabel("Horas por dia")).toHaveValue("8");
   await expect(page.getByLabel("Dias por mês")).toHaveValue("24");
 
-  const hero = page
-    .locator("section")
-    .filter({
-      has: page.getByRole("heading", {
-        name: "Para chegar lá, sobrar por dia",
-      }),
-    });
+  const hero = page.locator("section").filter({
+    has: page.getByRole("heading", {
+      name: "Para chegar lá, sobrar por dia",
+    }),
+  });
   await expect(hero).toContainText("R$ 416,67");
   await expect(hero).toContainText(
     "R$ 52,08 por hora · 67% acima do seu ritmo",
   );
 
-  const paths = page
-    .locator("section")
-    .filter({
-      has: page.getByRole("heading", { name: "Caminhos para chegar lá" }),
-    });
+  const paths = page.locator("section").filter({
+    has: page.getByRole("heading", { name: "Caminhos para chegar lá" }),
+  });
   await expect(paths.getByRole("listitem").nth(0)).toContainText(
     "Só mais horas",
   );
@@ -121,13 +117,11 @@ test("without history shows only what to earn per day and per hour", async ({
   await page.getByLabel("Quero chegar a").fill("6.600");
   await page.getByLabel("Dias por mês").fill("22");
   await page.getByLabel("Horas por dia").fill("10");
-  const hero = page
-    .locator("section")
-    .filter({
-      has: page.getByRole("heading", {
-        name: "Para chegar lá, sobrar por dia",
-      }),
-    });
+  const hero = page.locator("section").filter({
+    has: page.getByRole("heading", {
+      name: "Para chegar lá, sobrar por dia",
+    }),
+  });
   await expect(hero).toContainText("R$ 300,00");
   await expect(hero).toContainText("R$ 30,00 por hora");
   await expect(
