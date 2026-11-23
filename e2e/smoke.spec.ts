@@ -1,29 +1,82 @@
 import { expect, test } from "@playwright/test";
+import {
+  createTestUser,
+  deleteTestUser,
+  signIn,
+  type TestUser,
+} from "./support/supabase";
 
-test("root redirects to Registrar and tabs navigate", async ({ page }) => {
-  await page.goto("/");
-  await expect(page).toHaveURL(/\/registrar$/);
-  const nav = page.getByRole("navigation", { name: "Navegação principal" });
-  await expect(nav.getByRole("link", { name: "Registrar" })).toHaveAttribute(
-    "aria-current",
-    "page",
-  );
+test.describe("signed in", () => {
+  let user: TestUser;
+  test.beforeEach(async () => {
+    user = await createTestUser({ onboarded: true });
+  });
+  test.afterEach(async () => {
+    await deleteTestUser(user);
+  });
 
-  for (const [label, path, heading] of [
-    ["Painel", "/painel", "Painel"],
-    ["Simulador", "/simulador", "Simulador de meta"],
-    ["Insights", "/insights", "Insights"],
-  ] as const) {
-    await nav.getByRole("link", { name: label }).click();
-    await expect(page).toHaveURL(new RegExp(`${path}$`));
-    await expect(
-      page.getByRole("heading", { level: 1, name: heading }),
-    ).toBeVisible();
-    await expect(nav.getByRole("link", { name: label })).toHaveAttribute(
+  test("tabs navigate", async ({ page }) => {
+    await signIn(page, user);
+    await expect(page).toHaveURL(/\/registrar$/);
+    const nav = page.getByRole("navigation", { name: "Navegação principal" });
+    await expect(nav.getByRole("link", { name: "Registrar" })).toHaveAttribute(
       "aria-current",
       "page",
     );
-  }
+
+    for (const [label, path, heading] of [
+      ["Painel", "/painel", "Painel"],
+      ["Simulador", "/simulador", "Simulador de meta"],
+      ["Insights", "/insights", "Insights"],
+    ] as const) {
+      await nav.getByRole("link", { name: label }).click();
+      await expect(page).toHaveURL(new RegExp(`${path}$`));
+      await expect(
+        page.getByRole("heading", { level: 1, name: heading }),
+      ).toBeVisible();
+      await expect(nav.getByRole("link", { name: label })).toHaveAttribute(
+        "aria-current",
+        "page",
+      );
+    }
+  });
+
+  test("Registrar opens offline after sign-in", async ({
+    page,
+    context,
+    browserName,
+  }) => {
+    test.skip(browserName !== "chromium");
+    await signIn(page, user);
+    await expect(page).toHaveURL(/\/registrar$/);
+    // Wait until the service worker has cached the app tabs.
+    await expect
+      .poll(
+        () =>
+          page.evaluate(async () => {
+            const keys = await caches.keys();
+            const pages = keys.find((k) => k.startsWith("kmplus-pages-"));
+            if (!pages) return 0;
+            return (await (await caches.open(pages)).keys()).length;
+          }),
+        { timeout: 15_000 },
+      )
+      .toBeGreaterThanOrEqual(5);
+    await context.setOffline(true);
+    await page.goto("/painel").catch(() => undefined);
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Painel" }),
+    ).toBeVisible();
+    await context.setOffline(false);
+  });
+});
+
+test("signed-out visitors are sent to the login page", async ({ page }) => {
+  await page.goto("/painel");
+  await expect(page).toHaveURL(/\/entrar\?next=%2Fpainel$/);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Entre com seu e-mail" }),
+  ).toBeVisible();
 });
 
 test("serves a valid PWA manifest", async ({ request }) => {
@@ -39,29 +92,6 @@ test("serves a valid PWA manifest", async ({ request }) => {
   for (const icon of manifest.icons as Array<{ src: string }>) {
     expect((await request.get(icon.src)).ok()).toBe(true);
   }
-});
-
-test("registers the service worker and serves Registrar offline", async ({
-  page,
-  context,
-  browserName,
-}) => {
-  test.skip(browserName !== "chromium");
-  await page.goto("/registrar");
-  await page.evaluate(async () => {
-    await navigator.serviceWorker.ready;
-  });
-  // Ensure the SW controls the page, then go offline and reload.
-  await page.reload();
-  await page.evaluate(async () => {
-    await navigator.serviceWorker.ready;
-  });
-  await context.setOffline(true);
-  await page.reload();
-  await expect(
-    page.getByRole("heading", { level: 1, name: "Como foi o dia?" }),
-  ).toBeVisible();
-  await context.setOffline(false);
 });
 
 test("the dev components page is hidden in production", async ({ request }) => {
