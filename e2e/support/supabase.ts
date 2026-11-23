@@ -101,3 +101,70 @@ export async function signIn(page: Page, user: TestUser, next = "/registrar") {
   });
   await page.goto(`/auth/confirm?${params}`);
 }
+
+export type SeedDay = {
+  date: string;
+  minutes?: number | null;
+  km?: number | null;
+  isDayOff?: boolean;
+  earnings?: Array<{
+    source: "uber" | "99" | "other";
+    label?: string | null;
+    amount_cents: number;
+    minutes?: number | null;
+  }>;
+  expenses?: Array<{
+    category: "fuel" | "food" | "toll" | "parking" | "wash" | "other";
+    amount_cents: number;
+  }>;
+};
+
+/** Inserts days straight into the database (as if registered on another phone). */
+export async function seedDays(user: TestUser, days: SeedDay[]) {
+  const db = await adminClient();
+  for (const d of days) {
+    const { data, error } = await db
+      .from("days")
+      .insert({
+        user_id: user.id,
+        date: d.date,
+        minutes: d.minutes ?? null,
+        km: d.km ?? null,
+        is_day_off: d.isDayOff ?? false,
+      })
+      .select("id")
+      .single();
+    if (error) throw error;
+    if (d.earnings?.length) {
+      const { error: e } = await db
+        .from("earnings")
+        .insert(
+          d.earnings.map((x) => ({
+            ...x,
+            label: x.label ?? null,
+            minutes: x.minutes ?? null,
+            user_id: user.id,
+            day_id: data.id,
+          })),
+        );
+      if (e) throw e;
+    }
+    if (d.expenses?.length) {
+      const { error: e } = await db
+        .from("expenses")
+        .insert(
+          d.expenses.map((x) => ({ ...x, user_id: user.id, day_id: data.id })),
+        );
+      if (e) throw e;
+    }
+  }
+}
+
+export async function setProfile(
+  user: TestUser,
+  patch: Record<string, unknown>,
+) {
+  const db = await adminClient();
+  const { error } = await db.from("profiles").update(patch).eq("id", user.id);
+  if (error) throw error;
+}
