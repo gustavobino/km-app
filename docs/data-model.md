@@ -30,6 +30,12 @@ Toda tabela tem `created_at` e `updated_at` (atualizado por trigger), usados pel
 | `payments` | `unique(provider, provider_payment_id)` garante o webhook idempotente. `user_id` vira `null` se a conta for excluída (registro fiscal do pagamento é mantido). |
 | `entitlements` | `+ payment_id`, `+ revoked_at`, `+ revoke_reason` (reembolso de 7 dias). Índice garante no máximo um acesso **ativo** por usuário e plano. |
 
+## Sincronização offline (`0002_save_day.sql`)
+
+- `days.client_updated_at`: quando o motorista editou o dia no aparelho. Decide qual edição vale ("a mais recente ganha").
+- Função `save_day(payload jsonb)`: grava o dia inteiro (dia + ganhos + gastos) numa transação só. É **idempotente** (reenviar a mesma edição não duplica nada), ignora edições mais antigas que a guardada e, se a data já existir com outro id (registrada em outro celular), atualiza o dia existente e devolve o id dele. Roda com a sessão do usuário (`security invoker`), então o RLS vale.
+- O app chama a função pela rota `POST /api/sync/days`, que valida tudo com zod antes. Para baixar dias, lê direto do Supabase (RLS) os dias com `updated_at` maior que o último já recebido.
+
 ## Segurança (RLS)
 
 - RLS ligada em **todas** as tabelas.
@@ -59,3 +65,4 @@ Nunca aplicar `db/test-utils/supabase-shim.sql` no projeto real.
 | Data | Arquivo |
 |---|---|
 | 23/11/2026 | `0001_init.sql`, `seed.sql` |
+| 23/11/2026 | `0002_save_day.sql` |

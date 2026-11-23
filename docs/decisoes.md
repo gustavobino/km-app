@@ -72,3 +72,18 @@ Formato: decisão · motivo. Revise e me avise se quiser mudar alguma.
 ## Pendências para o lançamento (vão para `docs/lancamento.md` no M9)
 - **Configurar SMTP próprio** (ex.: Resend, Brevo) no Supabase: tira o limite de 2 e-mails/hora e libera o e-mail em português com código. Depois aplicar `db/auth-templates/login.html` e ligar `NEXT_PUBLIC_AUTH_OTP_CODE=true`.
 - Adicionar o domínio da Vercel em Supabase → Authentication → URL Configuration.
+
+## Registrar o dia e offline (M2)
+- Cada dia fica no aparelho (IndexedDB, via Dexie) como um registro completo, com a marca `dirty` enquanto não foi confirmado pelo servidor. Registrar a mesma data de novo edita o mesmo registro.
+- Sincroniza ao abrir o app, quando a internet volta, quando o app volta para a frente da tela e logo após "Fechar o dia". Um pedido feito durante uma sincronização dispara mais uma rodada no fim (para não perder o dia recém-salvo). Não usamos "Background Sync" do navegador: o suporte no iPhone é ruim, e o app sincroniza na próxima abertura.
+- Edição feita no aparelho e ainda não enviada nunca é sobrescrita por dados baixados; o servidor decide pela edição mais recente.
+- Sem internet, trocar de aba faz um carregamento completo (o service worker entrega a tela guardada). O service worker agora guarda também os arquivos JavaScript/CSS de cada aba.
+- Ao sair da conta, o app apaga os dados do aparelho e avisa antes se houver dias não enviados.
+- A tela de registro é desenhada só no aparelho: a data de "hoje" vem do celular, porque o HTML pode estar guardado de outro dia.
+- Setas no topo permitem registrar dias anteriores (quem roda de madrugada costuma fechar o dia depois da meia-noite). Não dá para ir para o futuro.
+- Gastos: um chip por categoria; "Outro" aceita vários, com descrição opcional. Combustível aceita litros, odômetro e "Enchi o tanque" (necessário para o km/l tanque a tanque do insight de consumo).
+- Dia de folga: esconde ganhos, horas e km; gastos continuam possíveis. O cartão mostra "Dia de folga" em vez de valor.
+- "Dividir horas entre apps": um campo de horas por app; se o total ficar vazio, ele vira a soma.
+- Taxa de plataforma no "Sobrou no bolso hoje": percentual por app e passe rateado por dia (`lib/metrics/core.ts`). Com o padrão `net_already`, é zero.
+- Métricas por hora/km de um período usam só os dias que informaram horas/km (para um dia sem horas não inflar o ganho por hora).
+- Anotação livre (`days.note`) existe no banco mas não aparece na tela (menos campos = registro mais rápido).
