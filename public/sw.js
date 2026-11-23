@@ -7,19 +7,32 @@
  * - Everything else (API, Supabase, payments): network only, never cached.
  * Bump VERSION to drop old caches.
  */
-const VERSION = "v1";
+const VERSION = "v2";
 const STATIC_CACHE = `kmplus-static-${VERSION}`;
 const PAGE_CACHE = `kmplus-pages-${VERSION}`;
 const APP_ROUTES = ["/registrar", "/painel", "/painel/lucro", "/simulador", "/insights"];
 const OFFLINE_FALLBACK = "/registrar";
 
-self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches
-      .open(PAGE_CACHE)
-      .then((cache) => Promise.allSettled(APP_ROUTES.map((route) => cache.add(route))))
-      .then(() => self.skipWaiting()),
+async function precacheAppRoutes() {
+  const cache = await caches.open(PAGE_CACHE);
+  await Promise.allSettled(
+    APP_ROUTES.map(async (route) => {
+      const response = await fetch(route, { credentials: "same-origin" });
+      // Signed out → the server redirects to /entrar; never cache that as the page.
+      if (response.ok && !response.redirected) await cache.put(route, response);
+    }),
   );
+}
+
+self.addEventListener("install", (event) => {
+  event.waitUntil(precacheAppRoutes().then(() => self.skipWaiting()));
+});
+
+// The app asks for this after sign-in, so the tabs open offline.
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "PRECACHE_APP") {
+    event.waitUntil(precacheAppRoutes());
+  }
 });
 
 self.addEventListener("activate", (event) => {
