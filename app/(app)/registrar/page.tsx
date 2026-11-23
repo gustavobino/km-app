@@ -1,17 +1,19 @@
 import type { Metadata } from "next";
-import { Screen, ScreenHeader } from "@/components/layout/Screen";
-import { EmptyState } from "@/components/ui/States";
+import { redirect } from "next/navigation";
+import { RegisterDayClient } from "@/components/day/RegisterDayClient";
+import { LOGIN_PATH } from "@/lib/auth/redirect";
+import { loadAppContext } from "@/lib/profile/server";
 
-export const metadata: Metadata = { title: "Como foi o dia?" };
+export const metadata: Metadata = { title: "Registrar o dia" };
 
-export default function Page() {
+export default async function RegisterPage() {
+  const ctx = await loadAppContext();
+  if (!ctx) redirect(LOGIN_PATH);
   return (
-    <Screen>
-      <ScreenHeader title="Como foi o dia?" />
-      <EmptyState
-        title="Em construção"
-        description="O registro do dia chega no marco M2."
-      />
-    </Screen>
+    <RegisterDayClient
+      userId={ctx.userId}
+      apps={ctx.apps}
+      platformSettings={ctx.platformSettings}
+    />
   );
 }

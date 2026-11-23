@@ -40,6 +40,14 @@ export function TabBar() {
               <Link
                 href={href}
                 aria-current={active ? "page" : undefined}
+                onClick={(e) => {
+                  // Offline, client-side navigation cannot fetch the next page;
+                  // a full load lets the service worker serve the cached tab.
+                  if (!navigator.onLine) {
+                    e.preventDefault();
+                    window.location.assign(href);
+                  }
+                }}
                 className={cn(
                   "flex min-h-touch flex-col items-center gap-1 rounded-xl text-xs",
                   active
