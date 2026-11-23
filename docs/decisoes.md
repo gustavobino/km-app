@@ -87,3 +87,15 @@ Formato: decisão · motivo. Revise e me avise se quiser mudar alguma.
 - Taxa de plataforma no "Sobrou no bolso hoje": percentual por app e passe rateado por dia (`lib/metrics/core.ts`). Com o padrão `net_already`, é zero.
 - Métricas por hora/km de um período usam só os dias que informaram horas/km (para um dia sem horas não inflar o ganho por hora).
 - Anotação livre (`days.note`) existe no banco mas não aparece na tela (menos campos = registro mais rápido).
+
+## Painel (M3)
+- **Comparação justa:** a variação compara o mesmo trecho do período anterior (quarta-feira: seg–qua desta semana × seg–qua da passada; dia 23: 1–23 deste mês × 1–23 do anterior). Comparar com o período anterior inteiro faria todo começo de semana parecer queda.
+- Selo de variação: triângulo para cima ou para baixo e o número, sempre em ink/lime (nunca vermelho). Sem período anterior com valor, o selo não aparece.
+- Barras: na Semana, uma por dia (Seg…Dom); no Mês, uma por semana (S1…S6, semanas de segunda a domingo cortadas no mês); em Hoje, sem barras. O melhor período fica em ink. Dias futuros ficam vazios.
+- Passe de app (modo `pass`) é rateado só pelos dias que já passaram no período.
+- Uber × 99 por hora só com horas por app (de pelo menos dois apps); senão o cartão vira "Quanto veio de cada app" (R$ e %) com a dica de usar "Dividir horas entre apps". Com um app só, o cartão some.
+- Sem horas e km no período, os cartões de ganho por hora/km dão lugar a uma dica curta.
+- Meta do mês sempre usa o mês, qualquer que seja a aba escolhida; some se não houver meta. Meta batida: "Meta batida! Você passou da meta em R$ X." O percentual é arredondado para baixo (não mostra 100% antes de bater).
+- A aba escolhida (Hoje/Semana/Mês) fica lembrada no aparelho.
+- A sincronização roda em qualquer aba do app (provider no layout), não só no Registrar.
+- Telas que leem dados do aparelho são desenhadas só no navegador com `ClientOnly` (e não com `next/dynamic` sem SSR): assim o código vai junto com a página e o service worker guarda tudo para uso sem internet. Um teste de ponta a ponta pegou essa regressão.
