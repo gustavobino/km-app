@@ -1,17 +1,21 @@
 import type { Metadata } from "next";
-import { Screen, ScreenHeader } from "@/components/layout/Screen";
-import { EmptyState } from "@/components/ui/States";
+import { redirect } from "next/navigation";
+import { LucroClient } from "@/components/lucro/LucroClient";
+import { LOGIN_PATH } from "@/lib/auth/redirect";
+import { loadAppContext } from "@/lib/profile/server";
+import { loadVehicleContext } from "@/lib/profile/vehicle-server";
 
 export const metadata: Metadata = { title: "Lucro líquido" };
 
-export default function Page() {
+export default async function LucroPage() {
+  const ctx = await loadAppContext();
+  if (!ctx) redirect(LOGIN_PATH);
+  const vehicle = await loadVehicleContext(ctx.userId);
   return (
-    <Screen>
-      <ScreenHeader title="Lucro líquido" />
-      <EmptyState
-        title="Em construção"
-        description="O lucro líquido chega no marco M4."
-      />
-    </Screen>
+    <LucroClient
+      userId={ctx.userId}
+      platformSettings={ctx.platformSettings}
+      vehicleContext={vehicle}
+    />
   );
 }
