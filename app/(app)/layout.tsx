@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { SyncProvider } from "@/components/day/SyncProvider";
 import { TabBar } from "@/components/layout/TabBar";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import { LOGIN_PATH } from "@/lib/auth/redirect";
@@ -18,10 +19,10 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   if (!profile?.onboarding_completed_at) redirect("/onboarding");
 
   return (
-    <>
+    <SyncProvider userId={userId}>
       {children}
       <TabBar />
       <ServiceWorkerRegister precacheApp />
-    </>
+    </SyncProvider>
   );
 }

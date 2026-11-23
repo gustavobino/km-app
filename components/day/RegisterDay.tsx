@@ -33,7 +33,7 @@ import { formatBRL, parseBRL } from "@/lib/money";
 import { DayHeader } from "./DayHeader";
 import { EarningsCard } from "./EarningsCard";
 import { ExpenseSheet } from "./ExpenseSheet";
-import { useSync } from "./useSync";
+import { useSyncState } from "./SyncProvider";
 
 const MAIN_CATEGORIES: ExpenseCategory[] = ["fuel", "food", "toll", "other"];
 const EXTRA_CATEGORIES: ExpenseCategory[] = ["parking", "wash"];
@@ -63,7 +63,7 @@ export function RegisterDay({ userId, apps, platformSettings }: Props) {
     entry: ExpenseEntry;
     isNew: boolean;
   } | null>(null);
-  const sync = useSync(userId);
+  const sync = useSyncState();
   const formRef = useRef<HTMLFormElement>(null);
 
   // `undefined` while loading, `null` when the day was never registered.

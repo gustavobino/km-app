@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 export type AppContext = {
   userId: string;
   apps: string[];
+  monthlyGoalCents: number | null;
   platformSettings: PlatformSetting[];
 };
 
@@ -16,7 +17,11 @@ export async function loadAppContext(): Promise<AppContext | null> {
   if (!userId) return null;
 
   const [{ data: profile }, { data: settings }] = await Promise.all([
-    supabase.from("profiles").select("apps").eq("id", userId).maybeSingle(),
+    supabase
+      .from("profiles")
+      .select("apps,monthly_goal_cents")
+      .eq("id", userId)
+      .maybeSingle(),
     supabase
       .from("platform_settings")
       .select("source,label,mode,percent,pass_cents,pass_period"),
@@ -25,6 +30,7 @@ export async function loadAppContext(): Promise<AppContext | null> {
   return {
     userId,
     apps: (profile?.apps as string[] | null) ?? [],
+    monthlyGoalCents: (profile?.monthly_goal_cents as number | null) ?? null,
     platformSettings: (settings ?? []).map((s) => ({
       source: s.source,
       label: s.label,
