@@ -1,17 +1,27 @@
 import type { Metadata } from "next";
-import { Screen, ScreenHeader } from "@/components/layout/Screen";
-import { EmptyState } from "@/components/ui/States";
+import { redirect } from "next/navigation";
+import { InsightsClient } from "@/components/insights/InsightsClient";
+import { LOGIN_PATH } from "@/lib/auth/redirect";
+import { loadMaintenanceItems } from "@/lib/profile/maintenance-server";
+import { loadAppContext } from "@/lib/profile/server";
+import { loadVehicleContext } from "@/lib/profile/vehicle-server";
 
 export const metadata: Metadata = { title: "Insights" };
 
-export default function Page() {
+export default async function InsightsPage() {
+  const ctx = await loadAppContext();
+  if (!ctx) redirect(LOGIN_PATH);
+  const [vehicle, maintenance] = await Promise.all([
+    loadVehicleContext(ctx.userId),
+    loadMaintenanceItems(),
+  ]);
   return (
-    <Screen>
-      <ScreenHeader title="Insights" />
-      <EmptyState
-        title="Em construção"
-        description="Os insights chegam no marco M6."
-      />
-    </Screen>
+    <InsightsClient
+      userId={ctx.userId}
+      platformSettings={ctx.platformSettings}
+      maintenance={maintenance}
+      vehicleModeEnabled={vehicle.vehicleModeEnabled}
+      reserveContext={vehicle}
+    />
   );
 }
