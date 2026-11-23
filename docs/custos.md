@@ -32,6 +32,7 @@ Unidade: **centavos por km**. Faixas de idade: 0–3, 4–7 e 8+ anos.
 
 ## Outras premissas (também placeholders)
 
+- Ordem de preferência para manutenção por km: valor digitado pelo motorista > histórico de manutenção dele (gastos "Outro" com descrição de manutenção, com pelo menos 1.000 km de histórico) > esta tabela.
 - km anual estimado = média de km por dia rodado nos últimos 90 dias × dias típicos por mês × 12. Sem histórico: **3.000 km/mês**.
 - Carro sem categoria informada usa "outro". Sem ano informado usa a faixa 4–7.
 

@@ -99,3 +99,11 @@ Formato: decisão · motivo. Revise e me avise se quiser mudar alguma.
 - A aba escolhida (Hoje/Semana/Mês) fica lembrada no aparelho.
 - A sincronização roda em qualquer aba do app (provider no layout), não só no Registrar.
 - Telas que leem dados do aparelho são desenhadas só no navegador com `ClientOnly` (e não com `next/dynamic` sem SSR): assim o código vai junto com a página e o service worker guarda tudo para uso sem internet. Um teste de ponta a ponta pegou essa regressão.
+
+## Lucro líquido e modo veículo (M4)
+- Lucro líquido mostra o **mês atual**: herói com o valor e a barra de "quanto do ganho ficou", depois ganhos → taxas dos apps (se houver) → gastos por categoria → "Sobrou no bolso".
+- Modo veículo desligado por padrão; o interruptor grava no perfil (precisa de internet; sem sinal, volta à posição anterior e avisa).
+- Reserva do carro = R$ por km × km do mês + aluguel/parcela rateados pelos dias já vividos do mês. Sempre com a etiqueta **"estimativa"** e "Não é aconselhamento financeiro".
+- Prioridade dos valores por km: o que o motorista digitou > o histórico dele de manutenção (gastos "Outro" com descrição tipo "óleo", "revisão", "freio"…, a partir de 1.000 km nos últimos 90 dias) > tabela de referência (placeholder). Quando a referência provisória é usada, a tela diz isso.
+- Seguro e IPVA anuais são divididos pelos km estimados no ano: média de km por dia rodado (últimos 90 dias) × dias típicos por mês (onboarding; 22 se vazio) × 12. Sem histórico: 3.000 km/mês (placeholder).
+- "Editar valores" abre uma gaveta com tudo opcional: tipo de posse, marca, modelo, ano, tipo de carro, aluguel/parcela, seguro, IPVA, manutenção e pneus por km.
