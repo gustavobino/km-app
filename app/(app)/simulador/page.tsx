@@ -1,17 +1,21 @@
 import type { Metadata } from "next";
-import { Screen, ScreenHeader } from "@/components/layout/Screen";
-import { EmptyState } from "@/components/ui/States";
+import { redirect } from "next/navigation";
+import { SimulatorClient } from "@/components/simulador/SimulatorClient";
+import { LOGIN_PATH } from "@/lib/auth/redirect";
+import { loadAppContext } from "@/lib/profile/server";
 
-export const metadata: Metadata = { title: "Simulador de meta" };
+export const metadata: Metadata = { title: "Simulador" };
 
-export default function Page() {
+export default async function SimulatorPage() {
+  const ctx = await loadAppContext();
+  if (!ctx) redirect(LOGIN_PATH);
   return (
-    <Screen>
-      <ScreenHeader title="Simulador de meta" />
-      <EmptyState
-        title="Em construção"
-        description="O simulador chega no marco M5."
-      />
-    </Screen>
+    <SimulatorClient
+      userId={ctx.userId}
+      platformSettings={ctx.platformSettings}
+      monthlyGoalCents={ctx.monthlyGoalCents}
+      typicalHoursPerDay={ctx.typicalHoursPerDay}
+      typicalDaysPerMonth={ctx.typicalDaysPerMonth}
+    />
   );
 }

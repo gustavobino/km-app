@@ -6,6 +6,8 @@ export type AppContext = {
   userId: string;
   apps: string[];
   monthlyGoalCents: number | null;
+  typicalHoursPerDay: number | null;
+  typicalDaysPerMonth: number | null;
   platformSettings: PlatformSetting[];
 };
 
@@ -19,7 +21,9 @@ export async function loadAppContext(): Promise<AppContext | null> {
   const [{ data: profile }, { data: settings }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("apps,monthly_goal_cents")
+      .select(
+        "apps,monthly_goal_cents,typical_hours_per_day,typical_days_per_month",
+      )
       .eq("id", userId)
       .maybeSingle(),
     supabase
@@ -31,6 +35,12 @@ export async function loadAppContext(): Promise<AppContext | null> {
     userId,
     apps: (profile?.apps as string[] | null) ?? [],
     monthlyGoalCents: (profile?.monthly_goal_cents as number | null) ?? null,
+    typicalHoursPerDay:
+      profile?.typical_hours_per_day == null
+        ? null
+        : Number(profile.typical_hours_per_day),
+    typicalDaysPerMonth:
+      (profile?.typical_days_per_month as number | null) ?? null,
     platformSettings: (settings ?? []).map((s) => ({
       source: s.source,
       label: s.label,
