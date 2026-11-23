@@ -107,3 +107,10 @@ Formato: decisão · motivo. Revise e me avise se quiser mudar alguma.
 - Prioridade dos valores por km: o que o motorista digitou > o histórico dele de manutenção (gastos "Outro" com descrição tipo "óleo", "revisão", "freio"…, a partir de 1.000 km nos últimos 90 dias) > tabela de referência (placeholder). Quando a referência provisória é usada, a tela diz isso.
 - Seguro e IPVA anuais são divididos pelos km estimados no ano: média de km por dia rodado (últimos 90 dias) × dias típicos por mês (onboarding; 22 se vazio) × 12. Sem histórico: 3.000 km/mês (placeholder).
 - "Editar valores" abre uma gaveta com tudo opcional: tipo de posse, marca, modelo, ano, tipo de carro, aluguel/parcela, seguro, IPVA, manutenção e pneus por km.
+
+## Simulador (M5)
+- Base = sobra líquida por hora nos últimos 90 dias, **só dias com horas** (taxas e gastos descontados). Constantes em `lib/simulator` (`SIMULATOR`): janela 90 dias, mínimo 7 dias, +20% por hora, +2 dias, carga alta acima de 12 h.
+- "Sem histórico suficiente, usar os valores do onboarding": interpretado assim — os campos já vêm preenchidos com a meta, as horas por dia e os dias por mês do onboarding; com menos de 7 dias com horas, a base usa o que existe e a tela avisa "Ainda com pouco histórico"; sem nenhum dia com horas, a tela mostra só quanto sobrar por dia e por hora e pede para registrar horas (não dá para inventar um ganho por hora).
+- "Hoje você sobra" = base por hora × horas por dia × dias por mês da rotina atual (onboarding; se vazio, média do histórico / 22 dias). É a "média atual" usada no "meio do caminho". Exemplo do `CLAUDE.md`: 31,25 × 8 × 24 = R$ 6.000.
+- Meta abaixo do ritmo atual: mostra "abaixo do seu ritmo atual" e não mostra o meio do caminho.
+- O aviso de carga alta troca o subtítulo do caminho (discreto, sem cor de alerta). O destaque lime fica no caminho 3, a menos que ele mesmo passe de 12 h.
