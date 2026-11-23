@@ -48,3 +48,27 @@ Formato: decisão · motivo. Revise e me avise se quiser mudar alguma.
 ## Custos do veículo
 - Valores iniciais de `cost_reference` são **placeholders** (marcados `is_placeholder = true` no banco e em `docs/custos.md`) para você revisar; a UI sempre mostra "estimativa".
 - km anual estimado = média de km/dia rodado dos últimos 90 dias × dias típicos por mês × 12; sem histórico, usa 3.000 km/mês (placeholder).
+
+## Login (M1)
+- **Link mágico por e-mail** com o e-mail padrão do Supabase (`/auth/callback`, fluxo PKCE). Limitação: o link precisa ser aberto **no mesmo aparelho e navegador** em que foi pedido.
+- O plano grátis do Supabase **não deixa personalizar o e-mail** sem um provedor de e-mail próprio (SMTP), e o provedor padrão envia **só 2 e-mails por hora**. Por isso o e-mail sai em inglês ("Sign in").
+- Já deixei pronto o modo melhor, que liga com um interruptor (`NEXT_PUBLIC_AUTH_OTP_CODE=true`) assim que houver SMTP: e-mail em português com **código de 6 dígitos** (digitado dentro do app instalado) e link que funciona em qualquer navegador (`/auth/confirm`). Modelo em `db/auth-templates/login.html`; código de 6 dígitos já configurado no Supabase.
+- Verificação da sessão com `getClaims()` (chaves assimétricas ES256, verificadas localmente: rápido mesmo com o banco nos EUA).
+- Telas do app exigem login (`proxy.ts`) e onboarding concluído (`app/(app)/layout.tsx`). A segurança real continua sendo o RLS.
+- Ao sair, o app apaga as páginas guardadas no aparelho (elas contêm dados do motorista).
+- O service worker só guarda as telas **depois** do login (nunca guarda a página de redirecionamento).
+
+## Onboarding (M1)
+- 5 perguntas (6 se o carro for alugado ou financiado), todas puláveis; "Pular" na última conclui.
+- "Dias por semana" vira `typical_days_per_month` = dias × 52 ÷ 12, arredondado (6 → 26).
+- Apps escolhidos viram `profiles.apps` e linhas em `platform_settings` no modo padrão `net_already`. Digitar "Uber" ou "99" no campo "Outro app" conta como o app oficial.
+- Aluguel/parcela vão para `vehicles` (só se informados). Combustível e meta ficam no perfil.
+- Ajustes mínimos (conta, refazer perguntas, sair) já existem; o restante vem no M8.
+
+## Testes ponta a ponta (M1)
+- Rodam contra o **Supabase real**: cada teste cria um usuário `e2e-…@example.com`, entra por um link gerado pelo servidor (sem enviar e-mail) e apaga o usuário no fim. A chave secreta é lida de `SUPABASE_SERVICE_ROLE_KEY` ou buscada na hora pela API de gerenciamento; nunca é gravada em arquivo.
+- No ambiente na nuvem do Claude, rodar com `NODE_USE_ENV_PROXY=1` (o Node só usa o proxy de rede com essa variável).
+
+## Pendências para o lançamento (vão para `docs/lancamento.md` no M9)
+- **Configurar SMTP próprio** (ex.: Resend, Brevo) no Supabase: tira o limite de 2 e-mails/hora e libera o e-mail em português com código. Depois aplicar `db/auth-templates/login.html` e ligar `NEXT_PUBLIC_AUTH_OTP_CODE=true`.
+- Adicionar o domínio da Vercel em Supabase → Authentication → URL Configuration.

@@ -35,7 +35,7 @@ Abra http://localhost:3000. Em desenvolvimento, `/dev/componentes` mostra os com
 | `pnpm typecheck` | gera os tipos das rotas e roda o TypeScript |
 | `pnpm test` | Vitest (cálculos + banco/RLS em PGlite) |
 | `pnpm test:coverage` | idem, com cobertura (100% exigido em `lib/metrics`, `lib/simulator`, `lib/insights`) |
-| `pnpm e2e` | Playwright (faz o build e sobe o servidor sozinho) |
+| `pnpm e2e` | Playwright (faz o build e sobe o servidor sozinho; usa o Supabase real e precisa de `SUPABASE_SERVICE_ROLE_KEY`) |
 | `pnpm check` | lint + typecheck + test (rodar antes de cada commit) |
 
 ## Estrutura
