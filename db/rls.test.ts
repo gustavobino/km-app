@@ -1,16 +1,12 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-import { PGlite } from "@electric-sql/pglite";
+import type { PGlite } from "@electric-sql/pglite";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { createTestDb, runAs } from "./test-utils/pglite";
 
 /**
  * Applies the real migrations on top of a Supabase shim in PGlite and checks
  * that Row Level Security isolates users. Each test runs inside a transaction
  * that is rolled back.
  */
-
-const ROOT = join(__dirname, "..");
-const read = (p: string) => readFileSync(join(ROOT, p), "utf8");
 
 const ALICE = "00000000-0000-4000-8000-00000000000a";
 const BOB = "00000000-0000-4000-8000-00000000000b";
@@ -19,26 +15,8 @@ const BOB_DAY = "10000000-0000-4000-8000-00000000000b";
 
 let db: PGlite;
 
-async function as(user: string | null, sql: string, params: unknown[] = []) {
-  await db.exec(`savepoint as_user;`);
-  await db.query(`select set_config('request.jwt.claims', $1, true)`, [
-    user ? JSON.stringify({ sub: user, role: "authenticated" }) : "",
-  ]);
-  await db.exec(
-    user ? `set local role authenticated;` : `set local role anon;`,
-  );
-  try {
-    const result = await db.query<Record<string, unknown>>(sql, params);
-    await db.exec(`reset role; release savepoint as_user;`);
-    return result;
-  } catch (error) {
-    // An error aborts the transaction; roll back to the savepoint, which also restores the role.
-    await db.exec(
-      `rollback to savepoint as_user; release savepoint as_user; reset role;`,
-    );
-    throw error;
-  }
-}
+const as = (user: string | null, sql: string, params: unknown[] = []) =>
+  runAs(db, user, sql, params);
 
 async function count(user: string | null, table: string) {
   const r = await as(user, `select count(*)::int as n from public.${table}`);
@@ -46,10 +24,7 @@ async function count(user: string | null, table: string) {
 }
 
 beforeAll(async () => {
-  db = new PGlite();
-  await db.exec(read("db/test-utils/supabase-shim.sql"));
-  await db.exec(read("db/migrations/0001_init.sql"));
-  await db.exec(read("db/seed.sql"));
+  db = await createTestDb();
 });
 
 afterAll(async () => {
