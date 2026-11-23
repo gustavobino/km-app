@@ -114,3 +114,14 @@ Formato: decisão · motivo. Revise e me avise se quiser mudar alguma.
 - "Hoje você sobra" = base por hora × horas por dia × dias por mês da rotina atual (onboarding; se vazio, média do histórico / 22 dias). É a "média atual" usada no "meio do caminho". Exemplo do `CLAUDE.md`: 31,25 × 8 × 24 = R$ 6.000.
 - Meta abaixo do ritmo atual: mostra "abaixo do seu ritmo atual" e não mostra o meio do caminho.
 - O aviso de carga alta troca o subtítulo do caminho (discreto, sem cor de alerta). O destaque lime fica no caminho 3, a menos que ele mesmo passe de 12 h.
+
+## Insights (M6)
+Regras em `lib/insights` (limiares em `INSIGHTS`), cada uma com testes abaixo/no/acima do limiar:
+1. **Melhor dia / turno:** ≥ 3 semanas desde o primeiro dia com horas, ≥ 2 dias com horas em pelo menos dois grupos, vantagem de sobra por hora ≥ 15% sobre a média (somada) dos outros grupos. Texto "Cerca de X%" arredondado de 5 em 5. Dia e turno aparecem como cartões separados. Um dia com vários turnos conta para cada um deles (aproximação; documentada aqui).
+2. **Apps:** semana atual; por hora só com horas por app, senão "X trouxe a maior parte" com a dica de dividir as horas.
+3. **Manutenção:** km rodados desde a última vez = odômetro mais recente (dos abastecimentos) − km da última vez; sem odômetro, soma dos km dos dias depois da data. Aviso com ≤ 15% do intervalo **ou** ≤ 800 km. Passou do ponto: "Já passou cerca de X km do previsto. Vale agendar." Cadastro mínimo de itens em Ajustes (sugestões: troca de óleo, rodízio de pneus, revisão).
+4. **Reserva:** só com modo veículo ligado; reserva do mês ÷ dias rodados.
+5. **Consumo:** km/l tanque a tanque (entre dois "tanque cheio", somando abastecimentos parciais no meio). Avisa se o último ficar > 10% pior que a média dos anteriores dos últimos 30 dias.
+6. **Resumo da semana:** frase-modelo com o valor, a variação contra o mesmo trecho da semana passada (sem desanimar: "Semana que vem tem mais") e o melhor dia.
+7. **Descanso:** ≥ 6 dias seguidos rodando (terminando hoje ou ontem). Uma linha discreta no fim, sem cor de alerta, com "Dispensar" (fica dispensado até a semana seguinte, guardado no aparelho).
+- Comparações no limite exato (ex.: 15,0%) contam como atingidas (tolerância de ponto flutuante).
