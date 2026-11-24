@@ -129,3 +129,11 @@ Regras em `lib/insights` (limiares em `INSIGHTS`), cada uma com testes abaixo/no
 ## Testes ponta a ponta: contas por processo
 - O Supabase permite 30 verificações de login a cada 5 minutos (proteção que **não** foi afrouxada). Para a suíte caber nisso, cada processo de teste entra uma vez com uma conta própria (`e2e/support/fixtures.ts`) e zera os dados dela antes de cada teste (`resetAccount`). Só os testes de onboarding e de "sair da conta" criam usuários novos.
 - Asserções esperam até 10 s (o login de teste depende do Supabase nos EUA).
+
+## Compra única (M7)
+- Ordem: login → primeiras perguntas → **tela de compra** → app. As telas do app ficam num grupo `(paid)` cujo layout chama `can(user, "app")`. **Ajustes não exige compra** (exportar e excluir conta são direitos da LGPD).
+- Sem internet, o app aberto continua funcionando com as telas guardadas no aparelho; a checagem de acesso volta a valer quando há conexão. (Substitui a ideia inicial de "cache do acesso por 30 dias": o efeito é o mesmo, sem código extra.)
+- Webhook: assinatura obrigatória; só eventos `payment`; o pagamento é relido na API; aprovação exige BRL e valor ≥ preço; `refunded`/`charged_back`/`cancelled` revogam o acesso criado por aquele pagamento. Erro interno responde 500 para o Mercado Pago tentar de novo.
+- Uma pessoa tem no máximo um acesso premium ativo (índice no banco); liberar de novo depois de revogar funciona.
+- `/admin` só para e-mails em `ADMIN_EMAILS`; para os outros, a página não existe (404).
+- Garantia de 7 dias na tela de compra. O canal para pedir o reembolso será o e-mail de contato dos Termos (pendente: preciso do seu e-mail público no M8).
