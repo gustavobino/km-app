@@ -3,7 +3,8 @@
 import { useTransition } from "react";
 import { Button } from "@/components/ui/Button";
 import { signOut } from "@/app/sair/actions";
-import { localDb, wipeLocalData } from "@/lib/local/db";
+import { cleanDevice } from "@/lib/local/cleanup";
+import { localDb } from "@/lib/local/db";
 
 /**
  * Signs out and erases this device's copy of the driver's data (cached pages
@@ -30,20 +31,7 @@ export function SignOutButton() {
           ) {
             return;
           }
-          if ("caches" in window) {
-            const keys = await caches.keys();
-            await Promise.all(
-              keys
-                .filter((k) => k.startsWith("kmplus-pages-"))
-                .map((k) => caches.delete(k)),
-            );
-          }
-          await wipeLocalData().catch(() => undefined);
-          try {
-            sessionStorage.clear();
-          } catch {
-            // ignore
-          }
+          await cleanDevice();
           await signOut();
         })
       }

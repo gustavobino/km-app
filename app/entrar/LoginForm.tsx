@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { ErrorState } from "@/components/ui/States";
 import { emailSchema, otpCodeSchema } from "@/lib/schemas/auth";
 import { authErrorMessage } from "@/lib/auth/messages";
+import { cleanDevice } from "@/lib/local/cleanup";
 import { createClient } from "@/lib/supabase/client";
 
 const RESEND_SECONDS = 60;
@@ -18,9 +19,11 @@ type Status = "idle" | "sending" | "sent" | "verifying";
 export function LoginForm({
   next,
   linkError,
+  accountDeleted = false,
 }: {
   next: string;
   linkError: boolean;
+  accountDeleted?: boolean;
 }) {
   const router = useRouter();
   const emailId = useId();
@@ -34,6 +37,11 @@ export function LoginForm({
       : null,
   );
   const [cooldown, setCooldown] = useState(0);
+
+  // After deleting the account, also erase this device's copy.
+  useEffect(() => {
+    if (accountDeleted) void cleanDevice();
+  }, [accountDeleted]);
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -164,6 +172,14 @@ export function LoginForm({
       className="mt-10 flex flex-col gap-gap-card"
       noValidate
     >
+      {accountDeleted ? (
+        <p
+          role="status"
+          className="rounded-card bg-lime px-4 py-3 text-[15px] font-bold"
+        >
+          Sua conta e seus dados foram excluídos.
+        </p>
+      ) : null}
       <header className="mb-2">
         <h1 className="font-display text-[32px] leading-[1.1] font-extrabold">
           Entre com seu e-mail
