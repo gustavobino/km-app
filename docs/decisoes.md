@@ -125,3 +125,7 @@ Regras em `lib/insights` (limiares em `INSIGHTS`), cada uma com testes abaixo/no
 6. **Resumo da semana:** frase-modelo com o valor, a variação contra o mesmo trecho da semana passada (sem desanimar: "Semana que vem tem mais") e o melhor dia.
 7. **Descanso:** ≥ 6 dias seguidos rodando (terminando hoje ou ontem). Uma linha discreta no fim, sem cor de alerta, com "Dispensar" (fica dispensado até a semana seguinte, guardado no aparelho).
 - Comparações no limite exato (ex.: 15,0%) contam como atingidas (tolerância de ponto flutuante).
+
+## Testes ponta a ponta: contas por processo
+- O Supabase permite 30 verificações de login a cada 5 minutos (proteção que **não** foi afrouxada). Para a suíte caber nisso, cada processo de teste entra uma vez com uma conta própria (`e2e/support/fixtures.ts`) e zera os dados dela antes de cada teste (`resetAccount`). Só os testes de onboarding e de "sair da conta" criam usuários novos.
+- Asserções esperam até 10 s (o login de teste depende do Supabase nos EUA).
