@@ -30,8 +30,10 @@ test("login form sends the magic link and shows the next step", async ({
   ).toBeVisible();
   await expect(page.getByText("motorista@email.com")).toBeVisible();
   expect(body?.email).toBe("motorista@email.com");
+  // Implicit flow: no PKCE challenge, so the e-mail link works in any browser.
+  expect(body?.code_challenge ?? null).toBeNull();
   const redirectTo = new URL(requestUrl).searchParams.get("redirect_to");
-  expect(redirectTo).toMatch(/\/auth\/callback\?next=%2Fpainel$/);
+  expect(redirectTo).toMatch(/\/auth\/link\?next=%2Fpainel$/);
   await expect(
     page.getByRole("button", { name: /Reenviar em \d+ s/ }),
   ).toBeDisabled();
@@ -177,5 +179,47 @@ test.describe("onboarding", () => {
     await page.getByRole("button", { name: "Pular e começar" }).click();
     // Onboarding done → the app asks for the purchase.
     await expect(page).toHaveURL(/\/comprar$/, { timeout: 15_000 });
+  });
+});
+
+test.describe("e-mail link opened in another browser", () => {
+  let user: TestUser;
+  test.beforeEach(async () => {
+    user = await createTestUser();
+  });
+  test.afterEach(async () => {
+    await deleteTestUser(user);
+  });
+
+  test("the link from the e-mail signs in from any browser", async ({
+    page,
+    baseURL,
+  }) => {
+    // Same link the e-mail carries ({{ .ConfirmationURL }}), opened in a fresh
+    // browser that never asked for it (e.g. the Gmail app or another phone).
+    const db = await adminClient();
+    const { data, error } = await db.auth.admin.generateLink({
+      type: "magiclink",
+      email: user.email,
+      options: { redirectTo: `${baseURL}/auth/link?next=%2Fregistrar` },
+    });
+    expect(error).toBeNull();
+    await page.goto(data.properties!.action_link);
+    // New user → onboarding (the app is reachable, so the session is set).
+    await expect(page).toHaveURL(/\/onboarding$/, { timeout: 20_000 });
+    await expect(
+      page.getByRole("heading", { name: "Em quais apps você roda?" }),
+    ).toBeVisible();
+  });
+
+  test("an expired link explains what to do", async ({ page }) => {
+    await page.goto(
+      "/auth/link?next=%2Fregistrar#error=access_denied&error_code=otp_expired",
+    );
+    await expect(
+      page.getByRole("heading", { name: "Esse link expirou ou já foi usado" }),
+    ).toBeVisible();
+    await page.getByRole("link", { name: "Pedir um novo link" }).click();
+    await expect(page).toHaveURL(/\/entrar$/);
   });
 });
