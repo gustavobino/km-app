@@ -52,7 +52,6 @@ Marque cada item ao concluir. Itens com **(você)** dependem do dono do app; os 
 - [ ] **Backup semanal gratuito** do banco Supabase. (eu)
 
 - [x] **E-mail próprio (SMTP)** — feito em 24/11/2026: domínio `kmmais.app.br` (Registro.br) verificado no Resend, Supabase enviando como `Km+ <nao-responda@kmmais.app.br>`, limite 30/h, modelo em português com código aplicado. Falta só `NEXT_PUBLIC_AUTH_OTP_CODE=true` na Vercel.
-- [ ] ~~antigo:~~ **E-mail próprio (SMTP)** no Supabase (ex.: Resend ou Brevo, precisa de um domínio). Sem isso: só 2 e-mails de login por hora e e-mail em inglês. Depois: aplicar `db/auth-templates/login.html` e ligar `NEXT_PUBLIC_AUTH_OTP_CODE=true` (código de 6 dígitos, melhor no iPhone). (você cria a conta; eu configuro)
 - [ ] **Domínio próprio** (ex.: kmmais.com.br) na Vercel → Settings → Domains; atualizar `NEXT_PUBLIC_SITE_URL`, URLs do Supabase e do webhook.
 - [ ] **Revisão jurídica** de `legal/termos.md` e `legal/privacidade.md` (remover a marca RASCUNHO depois). (você / advogado)
 - [ ] **Custos de referência** em `docs/custos.md`: revisar os placeholders e marcar `is_placeholder = false`. (você)
