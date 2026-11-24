@@ -149,3 +149,8 @@ Regras em `lib/insights` (limiares em `INSIGHTS`), cada uma com testes abaixo/no
 - Desempenho medido no celular emulado com 4G lento e CPU 4× mais lenta: LCP ~2,1 s e ~250 KB de JavaScript comprimido na primeira visita. A tela de login não carrega mais o banco local.
 - Teste do fluxo principal (login → onboarding → compra → registro → painel → simulador → insights) em `e2e/fluxo-principal.spec.ts`.
 - Deploy: a Vercel é ligada pelo dono pelo painel (importar o repositório do GitHub); as chaves secretas vão direto para as variáveis da Vercel, nunca pelo chat. Passo a passo em `docs/lancamento.md`.
+
+## Correção do login por link (24/11/2026, após o deploy)
+- Problema: o link do e-mail usava o fluxo PKCE, que só funciona no **mesmo navegador** que pediu o link. Aberto pelo app do Gmail ou em outro aparelho, o login não terminava e a pessoa voltava para a tela de e-mail.
+- Correção: o pedido do link usa o fluxo **implícito** (`lib/supabase/otp-client.ts`); o link traz a sessão e cai em `/auth/link`, que grava a sessão nos cookies e segue para o app. Funciona em qualquer navegador/aparelho. Teste de ponta a ponta abre o link real do Supabase num navegador limpo.
+- O cliente de cookies (`@supabase/ssr`) continua em PKCE para o resto (ele força esse modo); `/auth/callback` e `/auth/confirm` continuam para links antigos e para o modo com código.
