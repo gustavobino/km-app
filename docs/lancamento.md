@@ -2,7 +2,7 @@
 
 Marque cada item ao concluir. Itens com **(você)** dependem do dono do app; os outros eu (Claude) faço ou já fiz.
 
-## 1. Publicar na Vercel (você, ~10 min)
+## 1. Publicar na Vercel (você, ~10 min) — feito em 24/11/2026: https://km-app-three.vercel.app
 
 1. Crie uma conta em https://vercel.com usando **"Continue with GitHub"** (a mesma conta do repositório `gustavobino/km-app`).
 2. No painel da Vercel: **Add New… → Project** → em "Import Git Repository", escolha **km-app** (se não aparecer, clique em "Adjust GitHub App Permissions" e libere o repositório).
@@ -28,7 +28,8 @@ Marque cada item ao concluir. Itens com **(você)** dependem do dono do app; os 
 
 ## 2. Supabase aponta para o endereço novo (eu)
 
-- [ ] Authentication → URL Configuration: Site URL = endereço da Vercel; Redirect URLs += `https://SEU-ENDERECO/**`.
+- [x] Authentication → URL Configuration: Site URL = `https://km-app-three.vercel.app`; Redirect URLs += `https://km-app-three.vercel.app/**` (24/11/2026).
+- [x] Teste no site publicado (`e2e/producao.spec.ts`): login, onboarding, compra até o Mercado Pago, registro do dia.
 
 ## 3. Webhook do Mercado Pago (você, ~3 min)
 
