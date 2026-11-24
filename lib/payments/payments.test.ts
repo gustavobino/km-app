@@ -197,6 +197,39 @@ describe("MercadoPagoProvider", () => {
     await expect(bad.createCheckout(request)).rejects.toThrow(/HTTP 401/);
   });
 
+  it("goes through the relay when configured", async () => {
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ id: "p", init_point: "https://mp/c" }), {
+          status: 201,
+        }),
+    );
+    const mp = new MercadoPagoProvider("TOKEN", {
+      fetchImpl: fetchMock as unknown as typeof fetch,
+      apiBase: "https://ref.supabase.co/functions/v1/mp-relay/",
+      relayKey: "sb_secret_x",
+    });
+    await mp.createCheckout(request);
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [
+      string,
+      RequestInit,
+    ];
+    expect(url).toBe(
+      "https://ref.supabase.co/functions/v1/mp-relay/checkout/preferences",
+    );
+    const headers = init.headers as Record<string, string>;
+    expect(headers["x-relay-key"]).toBe("sb_secret_x");
+    expect(headers.Authorization).toBe("Bearer TOKEN");
+    const direct = new MercadoPagoProvider("T", {
+      fetchImpl: fetchMock as unknown as typeof fetch,
+    });
+    await direct.createCheckout(request);
+    const [, init2] = fetchMock.mock.calls[1] as unknown as [string, RequestInit];
+    expect(
+      (init2.headers as Record<string, string>)["x-relay-key"],
+    ).toBeUndefined();
+  });
+
   it("reads a payment", async () => {
     const mp = new MercadoPagoProvider(
       "T",

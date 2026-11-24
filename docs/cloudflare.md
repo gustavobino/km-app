@@ -22,3 +22,15 @@ Suíte de ponta a ponta rodada contra o build do Cloudflare em `workerd`: 106 te
 | **Build** (Settings → Build → Variables) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_CONTACT_EMAIL`, `NEXT_PUBLIC_AUTH_OTP_CODE=true` | entram no código na hora do build |
 | **Worker** (Settings → Variables and Secrets) | `SUPABASE_SERVICE_ROLE_KEY` (secret), `MERCADOPAGO_ACCESS_TOKEN` (secret), `MERCADOPAGO_WEBHOOK_SECRET` (secret), `ADMIN_EMAILS`, `LEGAL_CONTROLLER_NAME` | lidas em tempo de execução |
 | `wrangler.jsonc` | `PRICE_BRL_CENTS=1790` | não é segredo |
+
+## Pagamentos pelo Supabase (relay do Mercado Pago)
+
+O Mercado Pago recusa chamadas que saem do Cloudflare Workers (HTTP 403 sem corpo, mesmo com User-Agent). Por isso, no Cloudflare, o app fala com o Mercado Pago pela Edge Function `mp-relay` do Supabase (`supabase/functions/mp-relay/index.ts`, plano grátis).
+
+- `MERCADOPAGO_API_BASE` (em `wrangler.jsonc`, não é segredo) aponta para a função. Sem essa variável (Vercel, local), o app chama o Mercado Pago direto.
+- A função só aceita criar preferência e consultar pagamento, e só de quem envia a chave secreta do Supabase (`x-relay-key`, conferida no próprio Supabase). O token do Mercado Pago continua só no Cloudflare.
+- Deploy da função (Management API, `verify_jwt` desligado porque a autenticação é própria):
+
+```bash
+cd supabase/functions/mp-relay && curl -sS -X POST "https://api.supabase.com/v1/projects/bguifsyabtcvinzaajcy/functions/deploy?slug=mp-relay" -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" -F 'metadata={"entrypoint_path":"index.ts","name":"mp-relay","verify_jwt":false};type=application/json' -F "file=@index.ts;type=application/typescript"
+```

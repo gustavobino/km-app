@@ -4,18 +4,38 @@ import type {
   ProviderPayment,
 } from "./types";
 
-const API = "https://api.mercadopago.com";
+export const MP_API = "https://api.mercadopago.com";
 
 type Fetch = typeof fetch;
+
+export type MercadoPagoOptions = {
+  fetchImpl?: Fetch;
+  /**
+   * Base URL of the Mercado Pago API. On Cloudflare it points to our relay
+   * (supabase/functions/mp-relay), since Mercado Pago blocks Workers traffic.
+   */
+  apiBase?: string;
+  /** Sent as `x-relay-key` when going through the relay. */
+  relayKey?: string;
+};
 
 /** Mercado Pago Checkout Pro (Pix + card), via its REST API. */
 export class MercadoPagoProvider implements PaymentProvider {
   readonly name = "mercadopago" as const;
 
+  private readonly fetchImpl: Fetch;
+  private readonly api: string;
+  private readonly relayKey: string | undefined;
+
   constructor(
     private readonly accessToken: string,
-    private readonly fetchImpl: Fetch = fetch,
-  ) {}
+    opts: MercadoPagoOptions | Fetch = {},
+  ) {
+    const o = typeof opts === "function" ? { fetchImpl: opts } : opts;
+    this.fetchImpl = o.fetchImpl ?? ((...a) => fetch(...a));
+    this.api = (o.apiBase || MP_API).replace(/\/$/, "");
+    this.relayKey = o.relayKey;
+  }
 
   private headers(extra: Record<string, string> = {}) {
     return {
@@ -25,6 +45,7 @@ export class MercadoPagoProvider implements PaymentProvider {
       // Cloudflare Workers send no User-Agent by default, and Mercado Pago's
       // firewall answers anonymous requests with an empty HTTP 403.
       "User-Agent": "KmPlus/1.0 (+https://kmmais.app.br)",
+      ...(this.relayKey ? { "x-relay-key": this.relayKey } : {}),
       ...extra,
     };
   }
@@ -57,15 +78,19 @@ export class MercadoPagoProvider implements PaymentProvider {
       statement_descriptor: "KMPLUS",
       payment_methods: { installments: 1 },
     };
-    const res = await this.fetchImpl(`${API}/checkout/preferences`, {
+    const res = await this.fetchImpl(`${this.api}/checkout/preferences`, {
       method: "POST",
       headers: this.headers({
         "X-Idempotency-Key": `${req.userId}-${Date.now()}`,
       }),
       body: JSON.stringify(body),
     });
-    if (!res.ok)
-      throw new Error(`Mercado Pago preference failed: HTTP ${res.status}`);
+    if (!res.ok) {
+      const detail = await res.text().catch(() => "");
+      throw new Error(
+        `Mercado Pago preference failed: HTTP ${res.status} ${detail.slice(0, 200)}`.trim(),
+      );
+    }
     const json = (await res.json()) as {
       id: string;
       init_point?: string;
@@ -78,7 +103,7 @@ export class MercadoPagoProvider implements PaymentProvider {
 
   async getPayment(id: string): Promise<ProviderPayment | null> {
     if (!/^\d+$/.test(id)) return null;
-    const res = await this.fetchImpl(`${API}/v1/payments/${id}`, {
+    const res = await this.fetchImpl(`${this.api}/v1/payments/${id}`, {
       headers: this.headers(),
     });
     if (res.status === 404) return null;

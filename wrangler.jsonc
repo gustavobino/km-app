@@ -17,6 +17,9 @@
   // MERCADOPAGO_ACCESS_TOKEN, MERCADOPAGO_WEBHOOK_SECRET) are set with
   // `wrangler secret put` or in the Cloudflare dashboard, never here.
   "vars": {
-    "PRICE_BRL_CENTS": "1790"
+    "PRICE_BRL_CENTS": "1790",
+    // Mercado Pago blocks requests from Workers: go through the Supabase relay
+    // (supabase/functions/mp-relay). Not a secret.
+    "MERCADOPAGO_API_BASE": "https://bguifsyabtcvinzaajcy.supabase.co/functions/v1/mp-relay"
   }
 }
