@@ -47,6 +47,13 @@ Todas as checagens de acesso passam por `lib/entitlements.ts` (`can(user, featur
 | `SUPABASE_SERVICE_ROLE_KEY` | Vercel (secreta) | grava pagamentos e acessos |
 | `ADMIN_EMAILS` | Vercel | e-mails com acesso ao `/admin`, separados por vírgula |
 
+## Status
+
+- 24/11/2026: credencial de **teste** configurada (aplicação "kmmais", Checkout Pro). A criação do checkout foi verificada contra a API real do Mercado Pago (teste de ponta a ponta `real checkout`, rodar com `E2E_MERCADOPAGO=1 scripts/e2e-cloud.sh`).
+- O retorno automático (`auto_return`) só é enviado com endereço HTTPS: o Mercado Pago recusa `http://localhost`. Em desenvolvimento, depois de pagar, volte ao app manualmente.
+- Falta (M9): webhook com o endereço público e um pagamento de teste completo (cartão de teste "APRO") até a liberação do acesso.
+- **Segurança:** o token de teste chegou a ser colado no chat. Por ser de teste o risco é baixo, mas renove-o (Credenciais de teste → Renovar) antes do lançamento e use o novo só pelo formulário seguro / variáveis da Vercel.
+
 ## Testes
 
 - Unidade: assinatura, cliente da API (respostas simuladas), processamento idempotente, webhook (`lib/payments/*.test.ts`), regras de acesso (`lib/entitlements.test.ts`).
