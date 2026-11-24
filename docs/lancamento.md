@@ -30,8 +30,9 @@ Marque cada item ao concluir. Itens com **(você)** dependem do dono do app; os 
 
 - [x] Authentication → URL Configuration: Site URL = `https://km-app-three.vercel.app`; Redirect URLs += `https://km-app-three.vercel.app/**` (24/11/2026).
 - [x] Teste no site publicado (`e2e/producao.spec.ts`): login, onboarding, compra até o Mercado Pago, registro do dia.
+- [x] Link de login aberto em outro navegador/aparelho funciona no site publicado (correção de 24/11/2026).
 
-## 3. Webhook do Mercado Pago (você, ~3 min)
+## 3. Webhook do Mercado Pago (você, ~3 min) — feito em 24/11/2026 (o site recusa avisos sem assinatura: segredo configurado)
 
 1. Mercado Pago → sua aplicação → **Webhooks → Configurar notificações** (modo de teste).
 2. URL: `https://SEU-ENDERECO/api/webhooks/mercadopago`. Evento: **Pagamentos**. Salve.
