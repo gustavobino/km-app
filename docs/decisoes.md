@@ -159,3 +159,9 @@ Regras em `lib/insights` (limiares em `INSIGHTS`), cada uma com testes abaixo/no
 - **Vercel (plano Hobby, grátis) só para testes**: instalar o app, testar com o dono e conhecidos. O plano Hobby não permite uso comercial.
 - **Antes de começar a vender:** migrar para hospedagem gratuita que permite uso comercial (plano: Cloudflare Workers/Pages com o adaptador OpenNext). O dono não quer pagar US$ 20/mês agora.
 - Supabase segue no plano grátis enquanto a receita não justificar o pago; criar backup semanal gratuito do banco (pendente).
+
+## E-mail próprio e login por código (24/11/2026)
+- Domínio **kmmais.app.br** (Registro.br, no CPF do dono, vence em 24/11/2027). Registros do Resend (DKIM, 2 CNAMEs de envio, DMARC `p=none`) na zona do Registro.br (modo avançado).
+- Supabase envia pelo Resend (SMTP `smtp.resend.com:465`, usuário `resend`, senha = chave de API só de envio; configurada pelo dono direto no painel do Supabase). Remetente `Km+ <nao-responda@kmmais.app.br>`. Limite do Supabase passou de 2 para 30 e-mails/hora.
+- Modelo `db/auth-templates/login.html` aplicado (assunto "Seu código para entrar no Km+"): código de 6 dígitos + botão que abre `/auth/confirm` (funciona em qualquer navegador).
+- `NEXT_PUBLIC_AUTH_OTP_CODE=true`: a tela de login pede o código. Resolve o app instalado no iPhone (o link do e-mail abre no Safari, que não compartilha o login com o app instalado).
