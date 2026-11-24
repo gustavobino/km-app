@@ -48,11 +48,11 @@ Marque cada item ao concluir. Itens com **(você)** dependem do dono do app; os 
 
 ## 5. Antes de abrir para o público
 
-- [ ] **Migrar da Vercel para o Cloudflare** (grátis, permite uso comercial). A Vercel grátis fica só para testes. (eu)
+- [x] **Migrar da Vercel para o Cloudflare** — feito em 24/11/2026: Worker `km-app`, domínio `kmmais.app.br` (nameservers do Registro.br apontando para o Cloudflare; registros do Resend como "DNS only"). Teste completo passou no domínio. Supabase: Site URL = `https://kmmais.app.br`.
 - [ ] **Backup semanal gratuito** do banco Supabase. (eu)
 
 - [x] **E-mail próprio (SMTP)** — feito em 24/11/2026: domínio `kmmais.app.br` (Registro.br) verificado no Resend, Supabase enviando como `Km+ <nao-responda@kmmais.app.br>`, limite 30/h, modelo em português com código aplicado. Falta só `NEXT_PUBLIC_AUTH_OTP_CODE=true` na Vercel.
-- [ ] **Domínio próprio** (ex.: kmmais.com.br) na Vercel → Settings → Domains; atualizar `NEXT_PUBLIC_SITE_URL`, URLs do Supabase e do webhook.
+- [x] **Domínio próprio** `kmmais.app.br` no Cloudflare (24/11/2026). Falta (você): trocar a URL do webhook no Mercado Pago para `https://kmmais.app.br/api/webhooks/mercadopago`.
 - [ ] **Revisão jurídica** de `legal/termos.md` e `legal/privacidade.md` (remover a marca RASCUNHO depois). (você / advogado)
 - [ ] **Custos de referência** em `docs/custos.md`: revisar os placeholders e marcar `is_placeholder = false`. (você)
 - [ ] **Mercado Pago produção:** ativar credenciais de produção, trocar `MERCADOPAGO_ACCESS_TOKEN`, configurar o webhook de produção (novo segredo). Renovar o token de teste que foi colado no chat. (você)
