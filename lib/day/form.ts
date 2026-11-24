@@ -207,7 +207,14 @@ type IdFactory = () => string;
  * Validates the form. Field error keys: "earning:<key>", "earningHours:<key>",
  * "hours", "km", "expense:<key>", "liters:<key>", "odometer:<key>", "form".
  */
-export function parseDayForm(form: DayForm, newId: IdFactory): ParseResult {
+export function parseDayForm(
+  form: DayForm,
+  newId: IdFactory,
+  opts: {
+    /** Editing a day that was already saved: an empty form zeroes it. */
+    allowEmpty?: boolean;
+  } = {},
+): ParseResult {
   const errors: FieldErrors = {};
   const earnings: StoredEarning[] = [];
   const expenses: StoredExpense[] = [];
@@ -290,6 +297,7 @@ export function parseDayForm(form: DayForm, newId: IdFactory): ParseResult {
   }
 
   if (
+    !opts.allowEmpty &&
     !form.isDayOff &&
     earnings.length === 0 &&
     expenses.length === 0 &&

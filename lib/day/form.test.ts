@@ -493,3 +493,24 @@ describe("liveSummary", () => {
     expect(s.netCents).toBe(7500);
   });
 });
+
+describe("zeroing a saved day", () => {
+  it("an empty form is an error for a new day but zeroes a saved one", () => {
+    const empty = emptyForm("2026-11-23", ["uber"]);
+    expect(parseDayForm(empty, ids).ok).toBe(false);
+    const r = parseDayForm(empty, ids, { allowEmpty: true });
+    expect(r.ok && r.day).toMatchObject({
+      earnings: [],
+      expenses: [],
+      minutes: null,
+      km: null,
+      isDayOff: false,
+    });
+  });
+  it("still reports invalid fields when zeroing", () => {
+    const form = { ...emptyForm("2026-11-23", ["uber"]), hours: "99" };
+    expect(
+      parseDayForm(form, ids, { allowEmpty: true }).errors.hours,
+    ).toBeDefined();
+  });
+});

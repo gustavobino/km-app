@@ -157,9 +157,13 @@ export function RegisterDay({ userId, apps, platformSettings }: Props) {
     setSheet(null);
   }
 
-  async function closeDay() {
-    if (!form) return;
-    const result = parseDayForm(form, () => crypto.randomUUID());
+  async function closeDay(override?: DayForm) {
+    const current = override ?? form;
+    if (!current) return;
+    // A day that was already saved can be zeroed (everything empty).
+    const result = parseDayForm(current, () => crypto.randomUUID(), {
+      allowEmpty: isExisting,
+    });
     if (!result.ok) {
       setErrors(result.errors);
       // Move focus to the first invalid field so the driver sees what to fix.
@@ -185,6 +189,23 @@ export function RegisterDay({ userId, apps, platformSettings }: Props) {
     }
   }
 
+  /** "Apagar os dados deste dia": empties the form and saves the day zeroed. */
+  async function clearDay() {
+    if (!window.confirm("Apagar todos os valores registrados neste dia?"))
+      return;
+    const empty = emptyForm(date, apps);
+    setForm(empty);
+    await closeDay(empty);
+  }
+
+  const hasStoredData = Boolean(
+    stored &&
+    (stored.isDayOff ||
+      stored.minutes ||
+      stored.km ||
+      stored.earnings.length > 0 ||
+      stored.expenses.length > 0),
+  );
   const usedCategories = new Set(form.expenses.map((x) => x.category));
   const chipCategories = [
     ...MAIN_CATEGORIES,
@@ -338,6 +359,16 @@ export function RegisterDay({ userId, apps, platformSettings }: Props) {
                 ? "Salvar alterações"
                 : "Fechar o dia"}
           </Button>
+          {hasStoredData ? (
+            <Button
+              variant="ghost"
+              className="h-touch text-[14px] text-muted"
+              disabled={saving}
+              onClick={() => void clearDay()}
+            >
+              Apagar os dados deste dia
+            </Button>
+          ) : null}
           <p
             aria-live="polite"
             className={cn(
