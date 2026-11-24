@@ -48,6 +48,9 @@ Marque cada item ao concluir. Itens com **(você)** dependem do dono do app; os 
 
 ## 5. Antes de abrir para o público
 
+- [ ] **Migrar da Vercel para o Cloudflare** (grátis, permite uso comercial). A Vercel grátis fica só para testes. (eu)
+- [ ] **Backup semanal gratuito** do banco Supabase. (eu)
+
 - [ ] **E-mail próprio (SMTP)** no Supabase (ex.: Resend ou Brevo, precisa de um domínio). Sem isso: só 2 e-mails de login por hora e e-mail em inglês. Depois: aplicar `db/auth-templates/login.html` e ligar `NEXT_PUBLIC_AUTH_OTP_CODE=true` (código de 6 dígitos, melhor no iPhone). (você cria a conta; eu configuro)
 - [ ] **Domínio próprio** (ex.: kmmais.com.br) na Vercel → Settings → Domains; atualizar `NEXT_PUBLIC_SITE_URL`, URLs do Supabase e do webhook.
 - [ ] **Revisão jurídica** de `legal/termos.md` e `legal/privacidade.md` (remover a marca RASCUNHO depois). (você / advogado)

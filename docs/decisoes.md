@@ -154,3 +154,8 @@ Regras em `lib/insights` (limiares em `INSIGHTS`), cada uma com testes abaixo/no
 - Problema: o link do e-mail usava o fluxo PKCE, que só funciona no **mesmo navegador** que pediu o link. Aberto pelo app do Gmail ou em outro aparelho, o login não terminava e a pessoa voltava para a tela de e-mail.
 - Correção: o pedido do link usa o fluxo **implícito** (`lib/supabase/otp-client.ts`); o link traz a sessão e cai em `/auth/link`, que grava a sessão nos cookies e segue para o app. Funciona em qualquer navegador/aparelho. Teste de ponta a ponta abre o link real do Supabase num navegador limpo.
 - O cliente de cookies (`@supabase/ssr`) continua em PKCE para o resto (ele força esse modo); `/auth/callback` e `/auth/confirm` continuam para links antigos e para o modo com código.
+
+## Hospedagem (24/11/2026)
+- **Vercel (plano Hobby, grátis) só para testes**: instalar o app, testar com o dono e conhecidos. O plano Hobby não permite uso comercial.
+- **Antes de começar a vender:** migrar para hospedagem gratuita que permite uso comercial (plano: Cloudflare Workers/Pages com o adaptador OpenNext). O dono não quer pagar US$ 20/mês agora.
+- Supabase segue no plano grátis enquanto a receita não justificar o pago; criar backup semanal gratuito do banco (pendente).
