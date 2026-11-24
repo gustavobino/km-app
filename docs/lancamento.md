@@ -53,11 +53,11 @@ Marque cada item ao concluir. Itens com **(você)** dependem do dono do app; os 
 
 - [x] **E-mail próprio (SMTP)** — feito em 24/11/2026: domínio `kmmais.app.br` (Registro.br) verificado no Resend, Supabase enviando como `Km+ <nao-responda@kmmais.app.br>`, limite 30/h, modelo em português com código aplicado. Falta só `NEXT_PUBLIC_AUTH_OTP_CODE=true` na Vercel.
 - [x] **Domínio próprio** `kmmais.app.br` no Cloudflare (24/11/2026). Falta (você): trocar a URL do webhook no Mercado Pago para `https://kmmais.app.br/api/webhooks/mercadopago`.
-- [ ] **Revisão jurídica** de `legal/termos.md` e `legal/privacidade.md` (remover a marca RASCUNHO depois). (você / advogado)
+- [x] **Revisão jurídica** de `legal/termos.md` e `legal/privacidade.md` — feita (24/11/2026); marca RASCUNHO removida. Fornecedores atualizados: Cloudflare (hospedagem) e Resend (e-mail).
 - [ ] **Custos de referência** em `docs/custos.md`: revisar os placeholders e marcar `is_placeholder = false`. (você)
 - [ ] **Mercado Pago produção:** ativar credenciais de produção, trocar `MERCADOPAGO_ACCESS_TOKEN`, configurar o webhook de produção (novo segredo). Renovar o token de teste que foi colado no chat. (você)
 - [ ] **Compra real** de R$ 17,90 e estorno, para conferir.
-- [ ] **Logo e ícones finais** (hoje: wordmark provisório "Km+"). Trocar `public/icons/*`. (você cria a marca; eu aplico)
+- [x] **Logo e ícones:** o dono decidiu manter o wordmark "Km+" atual no lançamento (24/11/2026).
 - [ ] Supabase em plano pago ou backups (o plano grátis pausa projetos parados e não tem backup diário).
 - [ ] Login com Google (opcional, decidido para depois).
 

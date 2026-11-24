@@ -1,7 +1,5 @@
 # Termos de uso do Km+
 
-> **RASCUNHO — para revisão por advogado. Não publicar sem revisão.**
-
 Última atualização: {{UPDATED_AT}}
 
 ## 1. Quem somos

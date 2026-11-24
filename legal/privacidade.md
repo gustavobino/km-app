@@ -1,7 +1,5 @@
 # Política de privacidade do Km+
 
-> **RASCUNHO — para revisão por advogado. Não publicar sem revisão.**
-
 Última atualização: {{UPDATED_AT}}
 
 Esta política explica quais dados o Km+ trata, para quê e quais são os seus direitos, de acordo com a Lei Geral de Proteção de Dados (Lei 13.709/2018, "LGPD").
@@ -38,9 +36,9 @@ Não vendemos seus dados e não os usamos para publicidade.
 Apenas com fornecedores necessários para o serviço, que tratam os dados em nosso nome:
 
 - **Supabase** — banco de dados e login (servidores nos Estados Unidos).
-- **Vercel** — hospedagem do aplicativo.
+- **Cloudflare** — hospedagem do aplicativo.
 - **Mercado Pago** — processamento do pagamento.
-- **Provedor de e-mail** — envio do link/código de acesso.
+- **Resend** — envio do link/código de acesso por e-mail.
 
 Parte desses fornecedores mantém servidores fora do Brasil. Essa **transferência internacional** é feita com fornecedores que adotam garantias de proteção de dados compatíveis com a LGPD (art. 33). Também podemos compartilhar dados quando exigido por lei ou ordem judicial.
 

@@ -102,9 +102,7 @@ plain.describe("public legal pages", () => {
       await expect(
         page.getByRole("heading", { level: 1, name: "Termos de uso do Km+" }),
       ).toBeVisible();
-      await expect(
-        page.getByText("RASCUNHO — para revisão por advogado"),
-      ).toBeVisible();
+      await expect(page.getByText("RASCUNHO")).toHaveCount(0);
       await expect(
         page
           .getByText("não é afiliado à Uber nem à 99", { exact: false })
