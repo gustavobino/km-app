@@ -143,3 +143,9 @@ Regras em `lib/insights` (limiares em `INSIGHTS`), cada uma com testes abaixo/no
 - **Exportar meus dados:** `/api/export` devolve um `.zip` com um CSV por tipo de dado (perfil, carro, apps, dias, ganhos, gastos, manutenção, pagamentos, acesso). CSV com `;` e BOM (abre certo no Excel em português), valores em reais com vírgula e proteção contra fórmulas maliciosas. ZIP gerado sem dependências.
 - **Excluir minha conta:** é preciso digitar EXCLUIR. Apaga o usuário no Supabase (tudo em cascata) e a cópia no aparelho. O registro do pagamento fica, sem vínculo com a pessoa (obrigação fiscal).
 - **Termos e Privacidade:** rascunhos em `legal/termos.md` e `legal/privacidade.md`, marcados como RASCUNHO, publicados em `/termos` e `/privacidade`. Nome do responsável e e-mail de contato vêm de `LEGAL_CONTROLLER_NAME` e `NEXT_PUBLIC_CONTACT_EMAIL`; sem eles aparece "[a definir]". Precisam de revisão de advogado antes do lançamento.
+
+## Acabamento (M9)
+- Acessibilidade verificada com axe (WCAG 2.1 AA + boas práticas) em todas as telas, gavetas abertas e telas antes da compra: nenhum problema sério ou crítico.
+- Desempenho medido no celular emulado com 4G lento e CPU 4× mais lenta: LCP ~2,1 s e ~250 KB de JavaScript comprimido na primeira visita. A tela de login não carrega mais o banco local.
+- Teste do fluxo principal (login → onboarding → compra → registro → painel → simulador → insights) em `e2e/fluxo-principal.spec.ts`.
+- Deploy: a Vercel é ligada pelo dono pelo painel (importar o repositório do GitHub); as chaves secretas vão direto para as variáveis da Vercel, nunca pelo chat. Passo a passo em `docs/lancamento.md`.
