@@ -44,7 +44,8 @@ export class MercadoPagoProvider implements PaymentProvider {
         pending: req.pendingUrl,
         failure: req.failureUrl,
       },
-      auto_return: "approved",
+      // Mercado Pago only accepts auto_return with public HTTPS return URLs.
+      auto_return: req.successUrl.startsWith("https://") ? "approved" : undefined,
       notification_url: req.notificationUrl ?? undefined,
       statement_descriptor: "KMPLUS",
       payment_methods: { installments: 1 },
