@@ -38,7 +38,8 @@ export class MercadoPagoProvider implements PaymentProvider {
       ],
       external_reference: req.userId,
       metadata: { user_id: req.userId },
-      payer: req.email ? { email: req.email } : undefined,
+      // No payer e-mail: Mercado Pago asks for it at checkout. Sending a real
+      // e-mail makes test checkouts fail ("uma das partes é de teste").
       back_urls: {
         success: req.successUrl,
         pending: req.pendingUrl,

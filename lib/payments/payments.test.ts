@@ -162,8 +162,8 @@ describe("MercadoPagoProvider", () => {
       items: [{ unit_price: 17.9, currency_id: "BRL", quantity: 1 }],
       auto_return: "approved",
       notification_url: request.notificationUrl,
-      payer: { email: "m@email.com" },
     });
+    expect(body.payer).toBeUndefined();
   });
 
   it("falls back to the sandbox url and reports failures", async () => {
