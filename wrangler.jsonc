@@ -1,0 +1,19 @@
+{
+  // Cloudflare Workers (free plan) via OpenNext. See docs/cloudflare.md.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "km-app",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": { "enabled": true },
+  // Public, non-secret settings. Secrets (SUPABASE_SERVICE_ROLE_KEY,
+  // MERCADOPAGO_ACCESS_TOKEN, MERCADOPAGO_WEBHOOK_SECRET) are set with
+  // `wrangler secret put` or in the Cloudflare dashboard, never here.
+  "vars": {
+    "PRICE_BRL_CENTS": "1790"
+  }
+}
