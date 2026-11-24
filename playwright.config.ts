@@ -40,6 +40,8 @@ export default defineConfig({
         env: {
           ...(process.env as Record<string, string>),
           NEXT_TELEMETRY_DISABLED: "1",
+      // Same as production: login by 6-digit code (needs custom SMTP templates).
+      NEXT_PUBLIC_AUTH_OTP_CODE: "true",
           // Test-only values; real ones live in Vercel's environment.
           MERCADOPAGO_WEBHOOK_SECRET:
             process.env.E2E_WEBHOOK_SECRET ?? "e2e-webhook-secret",

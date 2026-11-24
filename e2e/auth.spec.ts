@@ -26,7 +26,7 @@ test("login form sends the magic link and shows the next step", async ({
   await page.getByLabel("E-mail").fill("  Motorista@Email.com ");
   await page.getByRole("button", { name: "Receber link de acesso" }).click();
   await expect(
-    page.getByRole("heading", { name: "Enviamos um link para entrar" }),
+    page.getByRole("heading", { name: "Enviamos um código para entrar" }),
   ).toBeVisible();
   await expect(page.getByText("motorista@email.com")).toBeVisible();
   expect(body?.email).toBe("motorista@email.com");
@@ -210,6 +210,35 @@ test.describe("e-mail link opened in another browser", () => {
     await expect(
       page.getByRole("heading", { name: "Em quais apps você roda?" }),
     ).toBeVisible();
+  });
+
+  test("the 6-digit code from the e-mail signs in", async ({ page }) => {
+    await page.route("**/auth/v1/otp**", (r) =>
+      r.fulfill({ status: 200, contentType: "application/json", body: "{}" }),
+    );
+    await page.goto("/entrar");
+    await page.getByLabel("E-mail").fill(user.email);
+    await page.getByRole("button", { name: "Receber link de acesso" }).click();
+    await expect(
+      page.getByRole("heading", { name: "Enviamos um código para entrar" }),
+    ).toBeVisible();
+    const db = await adminClient();
+    const { data } = await db.auth.admin.generateLink({
+      type: "magiclink",
+      email: user.email,
+    });
+
+    await page.getByLabel("Código do e-mail").fill("000000");
+    await page.getByRole("button", { name: "Entrar" }).click();
+    await expect(
+      page
+        .getByRole("alert")
+        .filter({ hasText: "Código inválido ou expirado" }),
+    ).toBeVisible();
+
+    await page.getByLabel("Código do e-mail").fill(data.properties!.email_otp);
+    await page.getByRole("button", { name: "Entrar" }).click();
+    await expect(page).toHaveURL(/\/onboarding$/, { timeout: 20_000 });
   });
 
   test("an expired link explains what to do", async ({ page }) => {

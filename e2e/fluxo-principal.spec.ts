@@ -30,17 +30,16 @@ test("new driver: from login to insights", async ({ page }) => {
   await page.getByLabel("E-mail").fill(user.email);
   await page.getByRole("button", { name: "Receber link de acesso" }).click();
   await expect(
-    page.getByRole("heading", { name: "Enviamos um link para entrar" }),
+    page.getByRole("heading", { name: "Enviamos um código para entrar" }),
   ).toBeVisible();
-  // …and the driver opens the link from the e-mail.
+  // …and types the 6-digit code from the e-mail (as in the installed iPhone app).
   const db = await adminClient();
   const { data } = await db.auth.admin.generateLink({
     type: "magiclink",
     email: user.email,
   });
-  await page.goto(
-    `/auth/confirm?token_hash=${data.properties!.hashed_token}&type=email&next=%2Fregistrar`,
-  );
+  await page.getByLabel("Código do e-mail").fill(data.properties!.email_otp);
+  await page.getByRole("button", { name: "Entrar" }).click();
 
   // Onboarding (one question per screen).
   await expect(page).toHaveURL(/\/onboarding$/);
