@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/Button";
 import { ErrorState } from "@/components/ui/States";
 import { emailSchema, otpCodeSchema } from "@/lib/schemas/auth";
 import { authErrorMessage } from "@/lib/auth/messages";
-import { cleanDevice } from "@/lib/local/cleanup";
 import { createClient } from "@/lib/supabase/client";
 
 const RESEND_SECONDS = 60;
@@ -40,7 +39,9 @@ export function LoginForm({
 
   // After deleting the account, also erase this device's copy.
   useEffect(() => {
-    if (accountDeleted) void cleanDevice();
+    // Loaded on demand: the login screen does not need the local database otherwise.
+    if (accountDeleted)
+      void import("@/lib/local/cleanup").then((m) => m.cleanDevice());
   }, [accountDeleted]);
 
   useEffect(() => {
