@@ -8,6 +8,7 @@ import { ErrorState } from "@/components/ui/States";
 import { emailSchema, otpCodeSchema } from "@/lib/schemas/auth";
 import { authErrorMessage } from "@/lib/auth/messages";
 import { createClient } from "@/lib/supabase/client";
+import { otpClient } from "@/lib/supabase/otp-client";
 
 const RESEND_SECONDS = 60;
 /** The 6-digit code only shows in e-mails once custom templates are on (needs custom SMTP). */
@@ -59,8 +60,8 @@ export function LoginForm({
       return;
     }
     setStatus("sending");
-    const supabase = createClient();
-    const redirect = new URL("/auth/callback", window.location.origin);
+    const supabase = otpClient();
+    const redirect = new URL("/auth/link", window.location.origin);
     redirect.searchParams.set("next", next);
     const { error: err } = await supabase.auth.signInWithOtp({
       email: parsed.data,
@@ -110,7 +111,7 @@ export function LoginForm({
           </h1>
           <p className="mt-2 text-[15px] font-semibold break-words text-lime-text">
             Para <strong className="font-extrabold text-ink">{email}</strong>.
-            Abra o e-mail neste aparelho e toque em “Sign in”.
+            Abra o e-mail e toque em “Sign in”.
           </p>
         </HeroCard>
 
