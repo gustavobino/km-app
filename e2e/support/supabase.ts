@@ -24,7 +24,7 @@ const PROJECT_REF = new globalThis.URL(URL).hostname.split(".")[0]!;
 
 let admin: SupabaseClient | undefined;
 
-async function secretKey(): Promise<string> {
+export async function secretKey(): Promise<string> {
   const fromEnv = readEnvLocal("SUPABASE_SERVICE_ROLE_KEY");
   if (fromEnv) return fromEnv;
   const res = await fetch(
@@ -193,7 +193,7 @@ export async function setVehicle(
  */
 export async function resetAccount(
   user: TestUser,
-  opts: { apps?: string[] } = {},
+  opts: { apps?: string[]; premium?: boolean } = {},
 ): Promise<TestUser> {
   const db = await adminClient();
   for (const table of [
@@ -215,5 +215,15 @@ export async function resetAccount(
     typical_days_per_month: null,
     vehicle_mode_enabled: false,
   });
+  if (opts.premium !== false) await grantPremium(user);
   return user;
+}
+
+/** Gives the user the paid plan (as the admin "Dar acesso" does). */
+export async function grantPremium(user: TestUser) {
+  const db = await adminClient();
+  const { error } = await db
+    .from("entitlements")
+    .insert({ user_id: user.id, plan: "premium", source: "manual" });
+  if (error && error.code !== "23505") throw error;
 }

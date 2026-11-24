@@ -33,7 +33,13 @@ export default defineConfig({
   ],
   webServer: {
     command: `pnpm build && pnpm start --port ${PORT}`,
-    env: { NEXT_TELEMETRY_DISABLED: "1" },
+    env: {
+      ...(process.env as Record<string, string>),
+      NEXT_TELEMETRY_DISABLED: "1",
+      // Test-only values; real ones live in Vercel's environment.
+      MERCADOPAGO_WEBHOOK_SECRET: process.env.E2E_WEBHOOK_SECRET ?? "e2e-webhook-secret",
+      ADMIN_EMAILS: process.env.E2E_ADMIN_EMAIL ?? "e2e-admin@example.com",
+    },
     url: `http://localhost:${PORT}/registrar`,
     reuseExistingServer: !process.env.CI,
     timeout: 240_000,

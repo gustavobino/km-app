@@ -130,7 +130,8 @@ test.describe("onboarding", () => {
     await page.getByLabel("Horas por dia").fill("8,5");
     await page.getByRole("button", { name: "Começar a usar" }).click();
 
-    await expect(page).toHaveURL(/\/registrar$/, { timeout: 15_000 });
+    // Onboarding done → the app asks for the purchase.
+    await expect(page).toHaveURL(/\/comprar$/, { timeout: 15_000 });
 
     const db = await adminClient();
     const { data: profile } = await db
@@ -174,6 +175,7 @@ test.describe("onboarding", () => {
     for (let i = 0; i < 4; i++)
       await page.getByRole("button", { name: "Pular", exact: true }).click();
     await page.getByRole("button", { name: "Pular e começar" }).click();
-    await expect(page).toHaveURL(/\/registrar$/, { timeout: 15_000 });
+    // Onboarding done → the app asks for the purchase.
+    await expect(page).toHaveURL(/\/comprar$/, { timeout: 15_000 });
   });
 });

@@ -89,6 +89,36 @@ describe("schema", () => {
   });
 });
 
+describe("entitlements", () => {
+  it("allows one active premium per user, and a new one after revoking", async () => {
+    await db.exec("savepoint dup;");
+    await expect(
+      db.exec(
+        `insert into public.entitlements (user_id, plan, source) values ('${BOB}', 'premium', 'manual')`,
+      ),
+    ).rejects.toThrow(/duplicate key/);
+    await db.exec("rollback to savepoint dup;");
+    await db.exec(
+      `update public.entitlements set revoked_at = now(), revoke_reason = 'reembolso' where user_id = '${BOB}'`,
+    );
+    await db.exec(
+      `insert into public.entitlements (user_id, plan, source) values ('${BOB}', 'premium', 'manual')`,
+    );
+    const r = await db.query<{ n: number }>(
+      `select count(*)::int as n from public.entitlements where user_id = '${BOB}'`,
+    );
+    expect(r.rows[0]!.n).toBe(2);
+  });
+
+  it("keeps payments idempotent by provider id", async () => {
+    await expect(
+      db.exec(
+        `insert into public.payments (provider, provider_payment_id, status, amount_cents) values ('mercadopago', 'mp-1', 'approved', 1790)`,
+      ),
+    ).rejects.toThrow(/duplicate key/);
+  });
+});
+
 describe("RLS isolation", () => {
   it("each user sees only their own rows", async () => {
     expect(await count(ALICE, "days")).toBe(1);

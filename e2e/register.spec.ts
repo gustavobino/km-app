@@ -5,6 +5,7 @@ import {
   adminClient,
   createTestUser,
   deleteTestUser,
+  grantPremium,
   resetAccount,
   signIn,
   type TestUser,
@@ -269,6 +270,7 @@ test.describe("sign-out", () => {
 
   test("signing out erases the data stored on the device", async ({ page }) => {
     const own = await createTestUser({ onboarded: true, apps: ["uber"] });
+    await grantPremium(own);
     try {
       await signIn(page, own);
       await page.getByLabel("Ganho Uber, em reais").fill("100");

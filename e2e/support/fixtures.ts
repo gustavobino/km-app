@@ -3,6 +3,7 @@ import { test as base } from "@playwright/test";
 import {
   createTestUser,
   deleteTestUser,
+  grantPremium,
   signIn,
   type TestUser,
 } from "./supabase";
@@ -16,6 +17,7 @@ export const test = base.extend<object, { account: TestUser }>({
   account: [
     async ({ browser }, provide, workerInfo) => {
       const user = await createTestUser({ onboarded: true });
+      await grantPremium(user);
       const dir = "test-results/.auth";
       mkdirSync(dir, { recursive: true });
       const statePath = `${dir}/${workerInfo.project.name}-${workerInfo.workerIndex}.json`;
