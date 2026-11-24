@@ -6,6 +6,8 @@ export const PROTECTED_PREFIXES = [
   "/insights",
   "/onboarding",
   "/ajustes",
+  "/comprar",
+  "/admin",
 ] as const;
 
 export const LOGIN_PATH = "/entrar";

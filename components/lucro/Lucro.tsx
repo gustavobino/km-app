@@ -3,7 +3,10 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
-import { saveVehicle, setVehicleMode } from "@/app/(app)/painel/lucro/actions";
+import {
+  saveVehicle,
+  setVehicleMode,
+} from "@/app/(app)/(paid)/painel/lucro/actions";
 import { Screen } from "@/components/layout/Screen";
 import { LinkButton, Button } from "@/components/ui/Button";
 import { CapsLabel, Card, HeroCard } from "@/components/ui/Card";
