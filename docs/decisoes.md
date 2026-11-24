@@ -165,3 +165,8 @@ Regras em `lib/insights` (limiares em `INSIGHTS`), cada uma com testes abaixo/no
 - Supabase envia pelo Resend (SMTP `smtp.resend.com:465`, usuário `resend`, senha = chave de API só de envio; configurada pelo dono direto no painel do Supabase). Remetente `Km+ <nao-responda@kmmais.app.br>`. Limite do Supabase passou de 2 para 30 e-mails/hora.
 - Modelo `db/auth-templates/login.html` aplicado (assunto "Seu código para entrar no Km+"): código de 6 dígitos + botão que abre `/auth/confirm` (funciona em qualquer navegador).
 - `NEXT_PUBLIC_AUTH_OTP_CODE=true`: a tela de login pede o código. Resolve o app instalado no iPhone (o link do e-mail abre no Safari, que não compartilha o login com o app instalado).
+
+## Migração para o Cloudflare (preparação, 24/11/2026)
+- Adaptador OpenNext para Cloudflare Workers, plano grátis, sem R2 (não exige cartão). Detalhes em `docs/cloudflare.md`.
+- `proxy.ts` voltou a ser `middleware.ts` (Edge): o proxy em Node.js é experimental no Cloudflare e quebrava com usuário logado. Funciona igual na Vercel.
+- Textos jurídicos embutidos no build (`scripts/gen-legal.mjs`), com teste que garante que batem com `legal/*.md`.
