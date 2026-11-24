@@ -1,6 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const PORT = Number(process.env.E2E_PORT ?? 3200);
+/** Run against a deployed site (no local server): E2E_BASE_URL=https://… */
+const REMOTE = process.env.E2E_BASE_URL;
 
 export default defineConfig({
   testDir: "./e2e",
@@ -12,7 +14,7 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? "github" : "list",
   use: {
-    baseURL: `http://localhost:${PORT}`,
+    baseURL: REMOTE ?? `http://localhost:${PORT}`,
     trace: "off",
     locale: "pt-BR",
     timezoneId: "America/Sao_Paulo",
@@ -31,17 +33,20 @@ export default defineConfig({
       },
     },
   ],
-  webServer: {
-    command: `pnpm build && pnpm start --port ${PORT}`,
-    env: {
-      ...(process.env as Record<string, string>),
-      NEXT_TELEMETRY_DISABLED: "1",
-      // Test-only values; real ones live in Vercel's environment.
-      MERCADOPAGO_WEBHOOK_SECRET: process.env.E2E_WEBHOOK_SECRET ?? "e2e-webhook-secret",
-      ADMIN_EMAILS: process.env.E2E_ADMIN_EMAIL ?? "e2e-admin@example.com",
-    },
-    url: `http://localhost:${PORT}/registrar`,
-    reuseExistingServer: !process.env.CI,
-    timeout: 240_000,
-  },
+  webServer: REMOTE
+    ? undefined
+    : {
+        command: `pnpm build && pnpm start --port ${PORT}`,
+        env: {
+          ...(process.env as Record<string, string>),
+          NEXT_TELEMETRY_DISABLED: "1",
+          // Test-only values; real ones live in Vercel's environment.
+          MERCADOPAGO_WEBHOOK_SECRET:
+            process.env.E2E_WEBHOOK_SECRET ?? "e2e-webhook-secret",
+          ADMIN_EMAILS: process.env.E2E_ADMIN_EMAIL ?? "e2e-admin@example.com",
+        },
+        url: `http://localhost:${PORT}/registrar`,
+        reuseExistingServer: !process.env.CI,
+        timeout: 240_000,
+      },
 });
