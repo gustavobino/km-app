@@ -10,6 +10,9 @@
     "binding": "ASSETS"
   },
   "observability": { "enabled": true },
+  // Keep the variables set in the Cloudflare dashboard on every deploy
+  // (ADMIN_EMAILS, LEGAL_CONTROLLER_NAME…); secrets are always kept.
+  "keep_vars": true,
   // Public, non-secret settings. Secrets (SUPABASE_SERVICE_ROLE_KEY,
   // MERCADOPAGO_ACCESS_TOKEN, MERCADOPAGO_WEBHOOK_SECRET) are set with
   // `wrangler secret put` or in the Cloudflare dashboard, never here.
