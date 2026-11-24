@@ -1,0 +1,180 @@
+import { expect, test } from "./support/fixtures";
+import { test as plain } from "@playwright/test";
+import {
+  adminClient,
+  createTestUser,
+  deleteTestUser,
+  grantPremium,
+  resetAccount,
+  seedDays,
+  signIn,
+  type TestUser,
+} from "./support/supabase";
+import { today } from "../lib/dates";
+
+test.describe("signed-in settings", () => {
+  let user: TestUser;
+  test.beforeEach(async ({ account }) => {
+    user = await resetAccount(account, { apps: ["uber", "99"] });
+    const db = await adminClient();
+    await db.from("platform_settings").insert([
+      { user_id: user.id, source: "uber", mode: "net_already" },
+      { user_id: user.id, source: "99", mode: "net_already" },
+    ]);
+  });
+
+  test("edits goal and routine", async ({ page }) => {
+    await signIn(page, user, "/ajustes");
+    await page.getByLabel("Meta de sobra por mês").fill("7.500");
+    await page.getByLabel("Horas/dia").fill("9");
+    await page.getByLabel("Dias por mês").fill("25");
+    await page.getByRole("button", { name: "Salvar", exact: true }).click();
+    await expect(
+      page.getByRole("status").filter({ hasText: "Salvo." }),
+    ).toBeVisible();
+    const db = await adminClient();
+    const { data } = await db
+      .from("profiles")
+      .select("monthly_goal_cents,typical_hours_per_day,typical_days_per_month")
+      .eq("id", user.id)
+      .single();
+    expect(data).toEqual({
+      monthly_goal_cents: 750000,
+      typical_hours_per_day: 9,
+      typical_days_per_month: 25,
+    });
+  });
+
+  test("an app fee changes what is left in the pocket", async ({ page }) => {
+    await signIn(page, user, "/ajustes");
+    await page
+      .getByRole("button", { name: /Uber.*já lanço o que recebi/ })
+      .click();
+    const sheet = page.getByRole("dialog", { name: "Uber" });
+    await sheet.getByText("Percentual por corrida").click();
+    await sheet.getByLabel("Taxa do app").fill("25");
+    await sheet.getByRole("button", { name: "Salvar" }).click();
+    await expect(
+      page.getByRole("button", { name: /Uber.*25% por corrida/ }),
+    ).toBeVisible();
+
+    await page.goto("/registrar");
+    await page.getByLabel("Ganho Uber, em reais").fill("100");
+    await expect(
+      page
+        .locator("[aria-live='polite']")
+        .filter({ hasText: "Sobrou no bolso" }),
+    ).toContainText("R$ 75,00");
+  });
+
+  test("exports the data as a ZIP of CSV files", async ({ page }) => {
+    await seedDays(user, [
+      {
+        date: today(),
+        minutes: 480,
+        km: 120,
+        earnings: [{ source: "uber", amount_cents: 21250 }],
+      },
+    ]);
+    await signIn(page, user, "/ajustes");
+    const [download] = await Promise.all([
+      page.waitForEvent("download"),
+      page.getByRole("link", { name: "Exportar meus dados" }).click(),
+    ]);
+    expect(download.suggestedFilename()).toMatch(
+      /^km-mais-meus-dados-\d{4}-\d{2}-\d{2}\.zip$/,
+    );
+    const path = await download.path();
+    const { readFileSync } = await import("node:fs");
+    const bytes = readFileSync(path);
+    expect(bytes.subarray(0, 2).toString()).toBe("PK");
+    const text = bytes.toString("utf8");
+    expect(text).toContain("ganhos.csv");
+    expect(text).toContain(`${today()};uber;;212,50;`);
+  });
+});
+
+plain.describe("public legal pages", () => {
+  plain(
+    "terms and privacy are drafts and reachable without signing in",
+    async ({ page }) => {
+      await page.goto("/termos");
+      await expect(
+        page.getByRole("heading", { level: 1, name: "Termos de uso do Km+" }),
+      ).toBeVisible();
+      await expect(
+        page.getByText("RASCUNHO — para revisão por advogado"),
+      ).toBeVisible();
+      await expect(
+        page
+          .getByText("não é afiliado à Uber nem à 99", { exact: false })
+          .first(),
+      ).toBeVisible();
+      await page
+        .getByRole("link", { name: "Política de privacidade" })
+        .first()
+        .click();
+      await expect(
+        page.getByRole("heading", {
+          level: 1,
+          name: "Política de privacidade do Km+",
+        }),
+      ).toBeVisible();
+      await expect(page.getByRole("table")).toBeVisible();
+    },
+  );
+});
+
+plain.describe("account deletion", () => {
+  let own: TestUser;
+  plain.beforeEach(async () => {
+    own = await createTestUser({ onboarded: true, apps: ["uber"] });
+    await grantPremium(own);
+    await seedDays(own, [
+      { date: today(), earnings: [{ source: "uber", amount_cents: 1000 }] },
+    ]);
+  });
+  plain.afterEach(async () => {
+    await deleteTestUser(own).catch(() => undefined);
+  });
+
+  plain(
+    "deletes the account, its data and the copy on the device",
+    async ({ page }) => {
+      await signIn(page, own, "/ajustes");
+      await page.getByRole("button", { name: "Excluir minha conta" }).click();
+      const sheet = page.getByRole("dialog", { name: "Excluir minha conta" });
+      await expect(
+        sheet.getByRole("button", { name: "Excluir conta para sempre" }),
+      ).toBeDisabled();
+      await sheet.getByLabel("Digite EXCLUIR para confirmar").fill("excluir");
+      await sheet
+        .getByRole("button", { name: "Excluir conta para sempre" })
+        .click();
+      await plain.expect(page).toHaveURL(/\/entrar\?conta=excluida$/);
+      await plain
+        .expect(
+          page
+            .getByRole("status")
+            .filter({ hasText: "Sua conta e seus dados foram excluídos." }),
+        )
+        .toBeVisible();
+
+      const db = await adminClient();
+      const { data: days } = await db
+        .from("days")
+        .select("id")
+        .eq("user_id", own.id);
+      expect(days).toEqual([]);
+      const { data: u } = await db.auth.admin.getUserById(own.id);
+      expect(u.user).toBeNull();
+      await plain.expect
+        .poll(() =>
+          page.evaluate(async () =>
+            (await indexedDB.databases()).map((d) => d.name).includes("kmplus"),
+          ),
+        )
+        .toBe(false);
+    },
+  );
+});
