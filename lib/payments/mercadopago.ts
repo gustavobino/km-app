@@ -21,6 +21,10 @@ export class MercadoPagoProvider implements PaymentProvider {
     return {
       Authorization: `Bearer ${this.accessToken}`,
       "Content-Type": "application/json",
+      Accept: "application/json",
+      // Cloudflare Workers send no User-Agent by default, and Mercado Pago's
+      // firewall answers anonymous requests with an empty HTTP 403.
+      "User-Agent": "KmPlus/1.0 (+https://kmmais.app.br)",
       ...extra,
     };
   }
