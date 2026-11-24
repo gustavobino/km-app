@@ -41,3 +41,18 @@ describe("legal markdown", () => {
     );
   });
 });
+
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { LEGAL_MARKDOWN } from "./content.generated";
+
+describe("embedded legal texts", () => {
+  it.each(["termos", "privacidade"] as const)(
+    "%s matches legal/%s.md (run node scripts/gen-legal.mjs)",
+    (name) => {
+      expect(LEGAL_MARKDOWN[name]).toBe(
+        readFileSync(join(__dirname, "../../legal", `${name}.md`), "utf8"),
+      );
+    },
+  );
+});

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/gen-legal.mjs && next build",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
@@ -13,7 +13,10 @@
     "test:coverage": "vitest run --coverage",
     "e2e": "playwright test",
     "format": "prettier --write .",
-    "check": "pnpm lint && pnpm typecheck && pnpm test"
+    "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "cf:build": "node scripts/gen-legal.mjs && opennextjs-cloudflare build",
+    "cf:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "cf:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
@@ -29,6 +32,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
     "@electric-sql/pglite": "^0.6.0",
+    "@opennextjs/cloudflare": "1.20.18",
     "@playwright/test": "1.65.1",
     "@tailwindcss/turbopack": "4.3.3",
     "@types/node": "^20",
@@ -42,7 +46,8 @@
     "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwindcss": "4.3.3",
     "typescript": "^5",
-    "vitest": "^5.1.1"
+    "vitest": "^5.1.1",
+    "wrangler": "4.168.0"
   },
   "packageManager": "pnpm@10.28.0"
 }
