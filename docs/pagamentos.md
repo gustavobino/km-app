@@ -58,3 +58,6 @@ Todas as checagens de acesso passam por `lib/entitlements.ts` (`can(user, featur
 
 - Unidade: assinatura, cliente da API (respostas simuladas), processamento idempotente, webhook (`lib/payments/*.test.ts`), regras de acesso (`lib/entitlements.test.ts`).
 - Ponta a ponta: tela de compra, bloqueio das telas, espera da confirmação, webhook com assinatura válida/inválida, admin (`e2e/compra.spec.ts`).
+
+## Problema conhecido: "Uma das partes … é de teste"
+Com credenciais de teste, o comprador também precisa ser "de teste". Por isso o app **não envia o e-mail do usuário** ao Mercado Pago (ele pede o e-mail no checkout). Ao testar: use uma **aba anônima**, não entre em nenhuma conta Mercado Pago e pague com o cartão de teste (titular `APRO`). Se ainda assim o Mercado Pago exigir login, crie um **comprador de teste** em Suas integrações → Contas de teste e entre com ele.
