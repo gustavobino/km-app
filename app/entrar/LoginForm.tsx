@@ -107,11 +107,15 @@ export function LoginForm({
         <HeroCard className="px-5 pt-5 pb-6" aria-live="polite">
           <CapsLabel onLime>Confira seu e-mail</CapsLabel>
           <h1 className="mt-2 font-display text-[28px] leading-[1.15] font-extrabold">
-            Enviamos um link para entrar
+            {CODE_LOGIN_ENABLED
+              ? "Enviamos um código para entrar"
+              : "Enviamos um link para entrar"}
           </h1>
           <p className="mt-2 text-[15px] font-semibold break-words text-lime-text">
-            Para <strong className="font-extrabold text-ink">{email}</strong>.
-            Abra o e-mail e toque em “Sign in”.
+            Para <strong className="font-extrabold text-ink">{email}</strong>.{" "}
+            {CODE_LOGIN_ENABLED
+              ? "Digite abaixo o código de 6 números do e-mail, ou toque em “Entrar no Km+” no próprio e-mail."
+              : "Abra o e-mail e toque em “Sign in”."}
           </p>
         </HeroCard>
 
@@ -123,12 +127,13 @@ export function LoginForm({
           >
             <Card className="px-4 py-3">
               <label htmlFor={codeId} className="block label-caps text-muted">
-                Ou digite o código
+                Código do e-mail
               </label>
               <input
                 id={codeId}
                 inputMode="numeric"
                 autoComplete="one-time-code"
+                autoFocus
                 maxLength={6}
                 value={code}
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
@@ -144,7 +149,10 @@ export function LoginForm({
         {error ? <ErrorState message={error} /> : null}
 
         <p className="px-1 text-[13px] font-semibold text-muted">
-          Não chegou? Olhe a caixa de spam ou promoções. O link vale por 1 hora.
+          Não chegou? Olhe a caixa de spam ou promoções.{" "}
+          {CODE_LOGIN_ENABLED
+            ? "O código vale por 1 hora."
+            : "O link vale por 1 hora."}
         </p>
         <Button
           variant="secondary"
@@ -152,7 +160,11 @@ export function LoginForm({
           onClick={() => sendLink()}
           disabled={cooldown > 0}
         >
-          {cooldown > 0 ? `Reenviar em ${cooldown} s` : "Reenviar o link"}
+          {cooldown > 0
+            ? `Reenviar em ${cooldown} s`
+            : CODE_LOGIN_ENABLED
+              ? "Reenviar o código"
+              : "Reenviar o link"}
         </Button>
         <Button
           variant="ghost"
@@ -187,7 +199,9 @@ export function LoginForm({
           Entre com seu e-mail
         </h1>
         <p className="mt-2 text-[15px] font-semibold text-muted">
-          Enviamos um link de acesso. Sem senha para lembrar.
+          {CODE_LOGIN_ENABLED
+            ? "Enviamos um código de acesso. Sem senha para lembrar."
+            : "Enviamos um link de acesso. Sem senha para lembrar."}
         </p>
       </header>
       <Card className="px-4 py-3">
