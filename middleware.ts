@@ -4,10 +4,14 @@ import { HOME_PATH, LOGIN_PATH, isProtectedPath } from "@/lib/auth/redirect";
 import { supabaseEnv } from "@/lib/supabase/env";
 
 /**
+ * Uses the (deprecated in Next 16) `middleware.ts` convention on purpose: it
+ * runs on the Edge runtime, which OpenNext supports on Cloudflare Workers; the
+ * Node.js `proxy.ts` is experimental there and crashed on signed-in requests.
+ *
  * Refreshes the Supabase session cookie on every request and does the
  * optimistic auth redirects. Real authorization is RLS in the database.
  */
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
   const { url, key } = supabaseEnv();
 
