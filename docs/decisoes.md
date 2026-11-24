@@ -137,3 +137,9 @@ Regras em `lib/insights` (limiares em `INSIGHTS`), cada uma com testes abaixo/no
 - Uma pessoa tem no máximo um acesso premium ativo (índice no banco); liberar de novo depois de revogar funciona.
 - `/admin` só para e-mails em `ADMIN_EMAILS`; para os outros, a página não existe (404).
 - Garantia de 7 dias na tela de compra. O canal para pedir o reembolso será o e-mail de contato dos Termos (pendente: preciso do seu e-mail público no M8).
+
+## Conta e legal (M8)
+- **Ajustes** (não exige compra): conta; "Seu trabalho" (apps, meta, horas por dia, dias por mês — as respostas do onboarding); "Como cada app te paga" (já lanço o que recebi / percentual / passe), que entra no "Sobrou no bolso"; atalho para o carro; manutenção; exportar; excluir conta; Termos, Privacidade e avisos; sair.
+- **Exportar meus dados:** `/api/export` devolve um `.zip` com um CSV por tipo de dado (perfil, carro, apps, dias, ganhos, gastos, manutenção, pagamentos, acesso). CSV com `;` e BOM (abre certo no Excel em português), valores em reais com vírgula e proteção contra fórmulas maliciosas. ZIP gerado sem dependências.
+- **Excluir minha conta:** é preciso digitar EXCLUIR. Apaga o usuário no Supabase (tudo em cascata) e a cópia no aparelho. O registro do pagamento fica, sem vínculo com a pessoa (obrigação fiscal).
+- **Termos e Privacidade:** rascunhos em `legal/termos.md` e `legal/privacidade.md`, marcados como RASCUNHO, publicados em `/termos` e `/privacidade`. Nome do responsável e e-mail de contato vêm de `LEGAL_CONTROLLER_NAME` e `NEXT_PUBLIC_CONTACT_EMAIL`; sem eles aparece "[a definir]". Precisam de revisão de advogado antes do lançamento.
