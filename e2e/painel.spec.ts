@@ -1,13 +1,13 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "./support/fixtures";
+import type { Page } from "@playwright/test";
 import { addDays, monthRange, today, weekRange } from "../lib/dates";
 import { summarizeRange, variation } from "../lib/metrics/period";
 import type { DayData } from "../lib/metrics/types";
 import { formatBRL } from "../lib/money";
 import {
-  createTestUser,
-  deleteTestUser,
   seedDays,
   setProfile,
+  resetAccount,
   signIn,
   type SeedDay,
   type TestUser,
@@ -69,14 +69,8 @@ const hero = (page: Page) =>
     .locator("section")
     .filter({ has: page.getByRole("heading", { name: /Sobrou no bolso/ }) });
 
-test.beforeEach(async () => {
-  user = await createTestUser({
-    onboarded: true,
-    apps: ["uber", "99", "inDrive"],
-  });
-});
-test.afterEach(async () => {
-  await deleteTestUser(user);
+test.beforeEach(async ({ account }) => {
+  user = await resetAccount(account, { apps: ["uber", "99", "inDrive"] });
 });
 
 test("shows a friendly empty state before the first day", async ({ page }) => {

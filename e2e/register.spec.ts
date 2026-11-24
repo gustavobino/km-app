@@ -1,23 +1,19 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "./support/fixtures";
+import type { Page } from "@playwright/test";
 import { addDays, today } from "../lib/dates";
 import {
   adminClient,
   createTestUser,
   deleteTestUser,
+  resetAccount,
   signIn,
   type TestUser,
 } from "./support/supabase";
 
 let user: TestUser;
 
-test.beforeEach(async () => {
-  user = await createTestUser({
-    onboarded: true,
-    apps: ["uber", "99", "inDrive"],
-  });
-});
-test.afterEach(async () => {
-  await deleteTestUser(user);
+test.beforeEach(async ({ account }) => {
+  user = await resetAccount(account, { apps: ["uber", "99", "inDrive"] });
 });
 
 async function serverDay(date: string) {
@@ -267,20 +263,35 @@ test("splits hours between apps", async ({ page }) => {
     .toBe(480);
 });
 
-test("signing out erases the data stored on the device", async ({ page }) => {
-  await signIn(page, user);
-  await page.getByLabel("Ganho Uber, em reais").fill("100");
-  await page.getByRole("button", { name: "Fechar o dia" }).click();
-  await expect(page.getByText("Dia fechado e salvo.")).toBeVisible();
-  await expect
-    .poll(async () => (await serverDay(today())).length, { timeout: 10_000 })
-    .toBe(1);
+test.describe("sign-out", () => {
+  // Signing out ends the session, so this test uses its own user, not the worker account.
+  test.use({ storageState: { cookies: [], origins: [] } });
 
-  await page.goto("/ajustes");
-  await page.getByRole("button", { name: "Sair da conta" }).click();
-  await expect(page).toHaveURL(/\/entrar$/);
-  const dbs = await page.evaluate(async () =>
-    (await indexedDB.databases()).map((d) => d.name),
-  );
-  expect(dbs).not.toContain("kmplus");
+  test("signing out erases the data stored on the device", async ({ page }) => {
+    const own = await createTestUser({ onboarded: true, apps: ["uber"] });
+    try {
+      await signIn(page, own);
+      await page.getByLabel("Ganho Uber, em reais").fill("100");
+      await page.getByRole("button", { name: "Fechar o dia" }).click();
+      await expect(page.getByText("Dia fechado e salvo.")).toBeVisible();
+      const db = await adminClient();
+      await expect
+        .poll(
+          async () =>
+            (await db.from("days").select("id").eq("user_id", own.id)).data
+              ?.length,
+        )
+        .toBe(1);
+
+      await page.goto("/ajustes");
+      await page.getByRole("button", { name: "Sair da conta" }).click();
+      await expect(page).toHaveURL(/\/entrar$/);
+      const dbs = await page.evaluate(async () =>
+        (await indexedDB.databases()).map((d) => d.name),
+      );
+      expect(dbs).not.toContain("kmplus");
+    } finally {
+      await deleteTestUser(own);
+    }
+  });
 });

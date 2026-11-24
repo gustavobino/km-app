@@ -54,7 +54,12 @@ export async function adminClient(): Promise<SupabaseClient> {
   return admin;
 }
 
-export type TestUser = { id: string; email: string };
+export type TestUser = {
+  id: string;
+  email: string;
+  /** Saved browser session (worker accounts): signIn() then just navigates. */
+  statePath?: string;
+};
 
 export async function createTestUser(
   opts: { onboarded?: boolean; apps?: string[] } = {},
@@ -87,6 +92,10 @@ export async function deleteTestUser(user: TestUser | undefined) {
 
 /** Signs the browser in through /auth/confirm, like the custom e-mail link does. */
 export async function signIn(page: Page, user: TestUser, next = "/registrar") {
+  if (user.statePath) {
+    await page.goto(next);
+    return;
+  }
   const db = await adminClient();
   const { data, error } = await db.auth.admin.generateLink({
     type: "magiclink",
@@ -176,4 +185,35 @@ export async function setVehicle(
     .from("vehicles")
     .upsert({ user_id: user.id, ...values }, { onConflict: "user_id" });
   if (error) throw error;
+}
+
+/**
+ * Wipes a worker account back to a just-onboarded driver, so each test starts
+ * clean without signing in again (Supabase allows 30 verifications per 5 min).
+ */
+export async function resetAccount(
+  user: TestUser,
+  opts: { apps?: string[] } = {},
+): Promise<TestUser> {
+  const db = await adminClient();
+  for (const table of [
+    "days",
+    "maintenance_items",
+    "vehicles",
+    "platform_settings",
+  ]) {
+    const { error } = await db.from(table).delete().eq("user_id", user.id);
+    if (error) throw error;
+  }
+  await setProfile(user, {
+    onboarding_completed_at: new Date().toISOString(),
+    apps: opts.apps ?? [],
+    vehicle_ownership: null,
+    fuel_type: null,
+    monthly_goal_cents: null,
+    typical_hours_per_day: null,
+    typical_days_per_month: null,
+    vehicle_mode_enabled: false,
+  });
+  return user;
 }

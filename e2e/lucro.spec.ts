@@ -1,23 +1,19 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./support/fixtures";
 import { today } from "../lib/dates";
 import {
   adminClient,
-  createTestUser,
-  deleteTestUser,
   seedDays,
   setProfile,
   setVehicle,
+  resetAccount,
   signIn,
   type TestUser,
 } from "./support/supabase";
 
 let user: TestUser;
 
-test.beforeEach(async () => {
-  user = await createTestUser({ onboarded: true, apps: ["uber", "99"] });
-});
-test.afterEach(async () => {
-  await deleteTestUser(user);
+test.beforeEach(async ({ account }) => {
+  user = await resetAccount(account, { apps: ["uber", "99"] });
 });
 
 test("shows the example month and the car reserve as an estimate", async ({

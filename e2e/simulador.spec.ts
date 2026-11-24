@@ -1,20 +1,16 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./support/fixtures";
 import { addDays, today } from "../lib/dates";
 import {
-  createTestUser,
-  deleteTestUser,
   seedDays,
   setProfile,
+  resetAccount,
   signIn,
   type TestUser,
 } from "./support/supabase";
 
 let user: TestUser;
-test.beforeEach(async () => {
-  user = await createTestUser({ onboarded: true, apps: ["uber"] });
-});
-test.afterEach(async () => {
-  await deleteTestUser(user);
+test.beforeEach(async ({ account }) => {
+  user = await resetAccount(account, { apps: ["uber"] });
 });
 
 test("CLAUDE.md example: 6.000 in 192 h, goal 10.000 with 8 h × 24 days", async ({

@@ -1,21 +1,14 @@
 import { expect, test } from "@playwright/test";
-import {
-  createTestUser,
-  deleteTestUser,
-  signIn,
-  type TestUser,
-} from "./support/supabase";
+import { test as signedInTest } from "./support/fixtures";
+import { resetAccount, signIn, type TestUser } from "./support/supabase";
 
-test.describe("signed in", () => {
+signedInTest.describe("signed in", () => {
   let user: TestUser;
-  test.beforeEach(async () => {
-    user = await createTestUser({ onboarded: true });
-  });
-  test.afterEach(async () => {
-    await deleteTestUser(user);
+  signedInTest.beforeEach(async ({ account }) => {
+    user = await resetAccount(account);
   });
 
-  test("tabs navigate", async ({ page }) => {
+  signedInTest("tabs navigate", async ({ page }) => {
     await signIn(page, user);
     await expect(page).toHaveURL(/\/registrar$/);
     const nav = page.getByRole("navigation", { name: "Navegação principal" });
@@ -41,34 +34,33 @@ test.describe("signed in", () => {
     }
   });
 
-  test("Registrar opens offline after sign-in", async ({
-    page,
-    context,
-    browserName,
-  }) => {
-    test.skip(browserName !== "chromium");
-    await signIn(page, user);
-    await expect(page).toHaveURL(/\/registrar$/);
-    // Wait until the service worker has cached the app tabs.
-    await expect
-      .poll(
-        () =>
-          page.evaluate(async () => {
-            const keys = await caches.keys();
-            const pages = keys.find((k) => k.startsWith("kmplus-pages-"));
-            if (!pages) return 0;
-            return (await (await caches.open(pages)).keys()).length;
-          }),
-        { timeout: 15_000 },
-      )
-      .toBeGreaterThanOrEqual(5);
-    await context.setOffline(true);
-    await page.goto("/painel").catch(() => undefined);
-    await expect(
-      page.getByRole("heading", { level: 1, name: "Painel" }),
-    ).toBeVisible();
-    await context.setOffline(false);
-  });
+  signedInTest(
+    "Registrar opens offline after sign-in",
+    async ({ page, context, browserName }) => {
+      test.skip(browserName !== "chromium");
+      await signIn(page, user);
+      await expect(page).toHaveURL(/\/registrar$/);
+      // Wait until the service worker has cached the app tabs.
+      await expect
+        .poll(
+          () =>
+            page.evaluate(async () => {
+              const keys = await caches.keys();
+              const pages = keys.find((k) => k.startsWith("kmplus-pages-"));
+              if (!pages) return 0;
+              return (await (await caches.open(pages)).keys()).length;
+            }),
+          { timeout: 15_000 },
+        )
+        .toBeGreaterThanOrEqual(5);
+      await context.setOffline(true);
+      await page.goto("/painel").catch(() => undefined);
+      await expect(
+        page.getByRole("heading", { level: 1, name: "Painel" }),
+      ).toBeVisible();
+      await context.setOffline(false);
+    },
+  );
 });
 
 test("signed-out visitors are sent to the login page", async ({ page }) => {

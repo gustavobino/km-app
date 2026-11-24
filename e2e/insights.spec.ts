@@ -1,12 +1,11 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./support/fixtures";
 import { addDays, formatWeekdayLong, today } from "../lib/dates";
 import {
   adminClient,
-  createTestUser,
-  deleteTestUser,
   seedDays,
   setProfile,
   setVehicle,
+  resetAccount,
   signIn,
   type SeedDay,
   type TestUser,
@@ -16,11 +15,8 @@ let user: TestUser;
 const T = today();
 const BEST = addDays(T, -2); // this weekday earns 40% more per hour
 
-test.beforeEach(async () => {
-  user = await createTestUser({ onboarded: true, apps: ["uber", "99"] });
-});
-test.afterEach(async () => {
-  await deleteTestUser(user);
+test.beforeEach(async ({ account }) => {
+  user = await resetAccount(account, { apps: ["uber", "99"] });
 });
 
 test("shows the week summary, every rule's card and the gentle rest line", async ({
@@ -67,14 +63,12 @@ test("shows the week summary, every rule's card and the gentle rest line", async
       .update({ liters, odometer_km: odo, full_tank: true })
       .eq("day_id", d!.id);
   }
-  await db
-    .from("maintenance_items")
-    .insert({
-      user_id: user.id,
-      name: "Troca de óleo",
-      interval_km: 10000,
-      last_done_km: 1750,
-    });
+  await db.from("maintenance_items").insert({
+    user_id: user.id,
+    name: "Troca de óleo",
+    interval_km: 10000,
+    last_done_km: 1750,
+  });
   await setProfile(user, {
     vehicle_mode_enabled: true,
     vehicle_ownership: "own",

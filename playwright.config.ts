@@ -4,6 +4,9 @@ const PORT = Number(process.env.E2E_PORT ?? 3200);
 
 export default defineConfig({
   testDir: "./e2e",
+  // The suite signs in against the real Supabase; under load a redirect can take > 5 s.
+  expect: { timeout: 10_000 },
+  timeout: 60_000,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
@@ -30,6 +33,7 @@ export default defineConfig({
   ],
   webServer: {
     command: `pnpm build && pnpm start --port ${PORT}`,
+    env: { NEXT_TELEMETRY_DISABLED: "1" },
     url: `http://localhost:${PORT}/registrar`,
     reuseExistingServer: !process.env.CI,
     timeout: 240_000,
