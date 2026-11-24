@@ -9,13 +9,7 @@ import type { PaymentProvider } from "./types";
 export function paymentProvider(): PaymentProvider {
   const token = process.env.MERCADOPAGO_ACCESS_TOKEN;
   if (!token) throw new Error("MERCADOPAGO_ACCESS_TOKEN is not set");
-  // On Cloudflare, Mercado Pago is reached through the Supabase relay
-  // (MERCADOPAGO_API_BASE in wrangler.jsonc), authenticated with our secret key.
-  const apiBase = process.env.MERCADOPAGO_API_BASE;
-  return new MercadoPagoProvider(token, {
-    apiBase,
-    relayKey: apiBase ? process.env.SUPABASE_SERVICE_ROLE_KEY : undefined,
-  });
+  return new MercadoPagoProvider(token);
 }
 
 export function processProviderPayment(paymentId: string) {
