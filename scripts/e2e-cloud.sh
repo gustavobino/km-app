@@ -12,4 +12,6 @@ if [ -z "${SUPABASE_SERVICE_ROLE_KEY:-}" ]; then
     | python3 -c 'import json,sys; print(next(k["api_key"] for k in json.load(sys.stdin) if k.get("type")=="secret"))')"
   export SUPABASE_SERVICE_ROLE_KEY
 fi
+# Mercado Pago test token is injected by the network proxy (when saved for this environment).
+if [ "${E2E_MERCADOPAGO:-0}" = "1" ]; then export MERCADOPAGO_ACCESS_TOKEN="${MERCADOPAGO_ACCESS_TOKEN:-proxy-injected}"; fi
 exec pnpm e2e "$@"

@@ -96,6 +96,14 @@ test.describe("without the purchase", () => {
       Boolean(process.env.MERCADOPAGO_ACCESS_TOKEN),
       "real credentials configured",
     );
+    // The test browser cannot reach mercadopago.com.br from this network: answer it locally.
+    await page.route(/mercadopago\.com\.br/, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "text/html",
+        body: "<h1>Mercado Pago</h1>",
+      }),
+    );
     await signIn(page, user, "/comprar");
     await page.getByRole("button", { name: "Comprar por R$ 17,90" }).click();
     await expect(
@@ -103,6 +111,40 @@ test.describe("without the purchase", () => {
         .getByRole("alert")
         .filter({ hasText: "O pagamento está indisponível agora" }),
     ).toBeVisible();
+  });
+});
+
+test.describe("real checkout (Mercado Pago test credentials)", () => {
+  test.skip(
+    !process.env.MERCADOPAGO_ACCESS_TOKEN,
+    "set MERCADOPAGO_ACCESS_TOKEN to run",
+  );
+  let user: TestUser;
+  test.beforeEach(async () => {
+    user = await createTestUser({ onboarded: true });
+  });
+  test.afterEach(async () => {
+    await deleteTestUser(user);
+  });
+
+  test("Comprar opens the Mercado Pago checkout", async ({ page }) => {
+    // The test browser cannot reach mercadopago.com.br from this network: answer it locally.
+    await page.route(/mercadopago\.com\.br/, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "text/html",
+        body: "<h1>Mercado Pago</h1>",
+      }),
+    );
+    await signIn(page, user, "/comprar");
+    await page.getByRole("button", { name: "Comprar por R$ 17,90" }).click();
+    await page.waitForURL(/mercadopago\.com\.br/, {
+      timeout: 30_000,
+      waitUntil: "commit",
+    });
+    const url = new URL(page.url());
+    expect(url.hostname).toMatch(/mercadopago\.com\.br$/);
+    expect(url.searchParams.get("pref_id")).toBeTruthy();
   });
 });
 
