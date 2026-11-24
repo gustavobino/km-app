@@ -27,14 +27,12 @@ export function supabasePaymentStore(db: SupabaseClient): PaymentStore {
     },
 
     async grantPremium(userId, paymentRowId) {
-      const { error } = await db
-        .from("entitlements")
-        .insert({
-          user_id: userId,
-          plan: "premium",
-          source: "purchase",
-          payment_id: paymentRowId,
-        });
+      const { error } = await db.from("entitlements").insert({
+        user_id: userId,
+        plan: "premium",
+        source: "purchase",
+        payment_id: paymentRowId,
+      });
       if (!error) return "granted";
       if (error.code === "23505") return "already"; // one active premium per user
       throw error;
