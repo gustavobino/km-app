@@ -297,3 +297,83 @@ test.describe("sign-out", () => {
     }
   });
 });
+
+test.describe("zeroing a day", () => {
+  let user: TestUser;
+  test.beforeEach(async ({ account }) => {
+    user = await resetAccount(account, { apps: ["uber", "99"] });
+  });
+
+  test("erasing the values of a saved day saves it zeroed", async ({
+    page,
+  }) => {
+    await signIn(page, user);
+    await page.getByLabel("Ganho Uber, em reais").fill("300");
+    await page.getByLabel("Horas rodadas").fill("8");
+    await page.getByRole("button", { name: "Fechar o dia" }).click();
+    await expect(page.getByText("Dia fechado e salvo.")).toBeVisible();
+
+    await page.getByLabel("Ganho Uber, em reais").fill("");
+    await page.getByLabel("Horas rodadas").fill("");
+    await page.getByRole("button", { name: "Salvar alterações" }).click();
+    await expect(page.getByText("Dia fechado e salvo.")).toBeVisible();
+    await expect(
+      page
+        .locator("[aria-live='polite']")
+        .filter({ hasText: "Sobrou no bolso" }),
+    ).toContainText("R$ 0,00");
+
+    const db = await adminClient();
+    await expect
+      .poll(
+        async () => {
+          const { data } = await db
+            .from("days")
+            .select("minutes,earnings(amount_cents)")
+            .eq("user_id", user.id)
+            .eq("date", today())
+            .single();
+          return data
+            ? { minutes: data.minutes, n: data.earnings.length }
+            : null;
+        },
+        { timeout: 10_000 },
+      )
+      .toEqual({ minutes: null, n: 0 });
+  });
+
+  test("the clear button empties a saved day after confirming", async ({
+    page,
+  }) => {
+    await signIn(page, user);
+    await page.getByLabel("Ganho Uber, em reais").fill("150");
+    await page.getByRole("button", { name: "Fechar o dia" }).click();
+    await expect(page.getByText("Dia fechado e salvo.")).toBeVisible();
+
+    page.once("dialog", (d) => d.accept());
+    await page
+      .getByRole("button", { name: "Apagar os dados deste dia" })
+      .click();
+    await expect(page.getByLabel("Ganho Uber, em reais")).toHaveValue("");
+    await expect(
+      page.getByRole("button", { name: "Apagar os dados deste dia" }),
+    ).toBeHidden();
+    const db = await adminClient();
+    await expect
+      .poll(
+        async () =>
+          (
+            await db
+              .from("days")
+              .select("earnings(amount_cents)")
+              .eq("user_id", user.id)
+              .eq("date", today())
+              .single()
+          ).data?.earnings.length,
+        {
+          timeout: 10_000,
+        },
+      )
+      .toBe(0);
+  });
+});

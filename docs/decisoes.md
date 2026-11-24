@@ -170,3 +170,6 @@ Regras em `lib/insights` (limiares em `INSIGHTS`), cada uma com testes abaixo/no
 - Adaptador OpenNext para Cloudflare Workers, plano grátis, sem R2 (não exige cartão). Detalhes em `docs/cloudflare.md`.
 - `proxy.ts` voltou a ser `middleware.ts` (Edge): o proxy em Node.js é experimental no Cloudflare e quebrava com usuário logado. Funciona igual na Vercel.
 - Textos jurídicos embutidos no build (`scripts/gen-legal.mjs`), com teste que garante que batem com `legal/*.md`.
+
+## Zerar um dia (24/11/2026, relato do dono)
+- Antes, um dia já salvo não podia ser zerado: a regra "informe pelo menos um ganho" bloqueava. Agora, ao **editar** um dia salvo, apagar tudo e salvar deixa o dia zerado; e há o botão **"Apagar os dados deste dia"** (com confirmação). Para um dia **novo**, a regra continua (evita fechar um dia vazio sem querer).
