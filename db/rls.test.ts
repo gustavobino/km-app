@@ -134,6 +134,39 @@ describe("RLS isolation", () => {
     expect(r.rows).toEqual([{ amount_cents: 21250 }]);
   });
 
+  it("push subscriptions belong to their owner only", async () => {
+    await as(
+      ALICE,
+      `insert into public.push_subscriptions (endpoint, p256dh, auth) values ('https://push.example/a', 'k', 'x')`,
+    );
+    await expect(
+      as(
+        ALICE,
+        `insert into public.push_subscriptions (user_id, endpoint, p256dh, auth) values ($1, 'https://push.example/b', 'k', 'x')`,
+        [BOB],
+      ),
+    ).rejects.toThrow(/row-level security/);
+    await expect(
+      as(
+        ALICE,
+        `insert into public.push_subscriptions (endpoint, p256dh, auth) values ('http://insecure', 'k', 'x')`,
+      ),
+    ).rejects.toThrow(/check constraint/);
+    expect(await count(ALICE, "push_subscriptions")).toBe(1);
+    expect(await count(BOB, "push_subscriptions")).toBe(0);
+    await expect(
+      as(ALICE, `update public.push_subscriptions set auth = 'y'`),
+    ).rejects.toThrow(/permission denied/);
+    // Reminder times only in 15-minute steps.
+    await expect(
+      as(ALICE, `update public.profiles set reminder_time = '20:10'`),
+    ).rejects.toThrow(/check constraint/);
+    await as(
+      ALICE,
+      `update public.profiles set reminder_enabled = true, reminder_time = '20:30'`,
+    );
+  });
+
   it("anonymous users see nothing and cannot read reference data", async () => {
     await expect(as(null, `select * from public.days`)).rejects.toThrow(
       /permission denied/,

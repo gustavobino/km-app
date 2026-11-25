@@ -9,6 +9,9 @@ export type AppContext = {
   typicalHoursPerDay: number | null;
   typicalDaysPerMonth: number | null;
   platformSettings: PlatformSetting[];
+  reminderEnabled: boolean;
+  /** "20:30" (São Paulo). */
+  reminderTime: string | null;
 };
 
 /** What the screens need about the driver. Null when signed out. */
@@ -22,7 +25,7 @@ export async function loadAppContext(): Promise<AppContext | null> {
     supabase
       .from("profiles")
       .select(
-        "apps,monthly_goal_cents,typical_hours_per_day,typical_days_per_month",
+        "apps,monthly_goal_cents,typical_hours_per_day,typical_days_per_month,reminder_enabled,reminder_time",
       )
       .eq("id", userId)
       .maybeSingle(),
@@ -41,6 +44,11 @@ export async function loadAppContext(): Promise<AppContext | null> {
         : Number(profile.typical_hours_per_day),
     typicalDaysPerMonth:
       (profile?.typical_days_per_month as number | null) ?? null,
+    reminderEnabled: Boolean(profile?.reminder_enabled),
+    reminderTime:
+      typeof profile?.reminder_time === "string"
+        ? profile.reminder_time.slice(0, 5)
+        : null,
     platformSettings: (settings ?? []).map((s) => ({
       source: s.source,
       label: s.label,

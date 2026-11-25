@@ -11,6 +11,7 @@ import {
   workSettingsSchema,
 } from "@/lib/schemas/settings";
 import { adminClient } from "@/lib/supabase/admin";
+import { reminderInputSchema } from "@/lib/schemas/reminder";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 const OFFLINE =
@@ -171,4 +172,39 @@ export async function deleteAccount(
   }
   await supabase.auth.signOut({ scope: "local" }).catch(() => undefined);
   redirect("/entrar?conta=excluida");
+}
+
+/** "Lembrete para fechar o dia": time + this device's push subscription. */
+export async function saveReminder(input: unknown): Promise<ActionResult> {
+  const parsed = reminderInputSchema.safeParse(input);
+  if (!parsed.success)
+    return {
+      ok: false,
+      error: "Não deu para ligar o lembrete neste aparelho.",
+    };
+  const { supabase, userId } = await session();
+  if (!userId)
+    return { ok: false, error: "Sua sessão expirou. Entre de novo." };
+  const { enabled, time, subscription } = parsed.data;
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ reminder_enabled: enabled, reminder_time: `${time}:00` })
+    .eq("id", userId);
+  if (error) return { ok: false, error: OFFLINE };
+
+  if (subscription) {
+    // The same browser may have been used by another account: the endpoint moves to this one.
+    await adminClient()
+      .from("push_subscriptions")
+      .delete()
+      .eq("endpoint", subscription.endpoint);
+    if (enabled) {
+      const { error: subErr } = await supabase
+        .from("push_subscriptions")
+        .insert({ user_id: userId, ...subscription });
+      if (subErr) return { ok: false, error: OFFLINE };
+    }
+  }
+  return { ok: true };
 }

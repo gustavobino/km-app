@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { AccountData } from "@/components/ajustes/AccountData";
 import { MaintenanceList } from "@/components/ajustes/MaintenanceList";
 import { PlatformFees } from "@/components/ajustes/PlatformFees";
+import { ReminderSettings } from "@/components/ajustes/ReminderSettings";
 import { WorkSettings } from "@/components/ajustes/WorkSettings";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { Screen, ScreenHeader } from "@/components/layout/Screen";
@@ -56,6 +57,12 @@ export default async function SettingsPage() {
         daysPerMonth={ctx.typicalDaysPerMonth}
       />
       <PlatformFees settings={ctx.platformSettings} />
+      {paid ? (
+        <ReminderSettings
+          enabled={ctx.reminderEnabled}
+          time={ctx.reminderTime}
+        />
+      ) : null}
 
       {paid ? (
         <Link

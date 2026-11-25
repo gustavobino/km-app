@@ -180,3 +180,11 @@ Regras em `lib/insights` (limiares em `INSIGHTS`), cada uma com testes abaixo/no
 - Manutenção = plano de revisões da montadora ÷ km + desgaste (freios e suspensão, igual para todos). Pneus = 4 × preço médio ÷ 50 mil km. Fontes e limitações em `docs/custos.md`.
 - `cost_reference` passou a ter as médias por tipo (compacto, sedã, outro), `is_placeholder = false`; SUV segue placeholder.
 - Sem busca na internet em tempo real: preços de sites mudam de formato, não dá para validar automaticamente e o app precisa funcionar sem sinal.
+
+## Novidades de 24–25/11/2026
+
+- **Meta de hoje** (Registrar): resto da meta do mês (antes de hoje) ÷ dias restantes incluindo hoje, comparado com o que hoje já deixou. Função pura `todayGoal` em `lib/metrics/period.ts`.
+- **Resumo do ano** (`/painel/ano`): totais do ano, barras por mês, melhor mês, média por dia rodado, ganho/h e /km, apps. Dados do aparelho (funciona offline). `lib/metrics/year.ts`.
+- **Relatório de ganhos em PDF**: gerado no celular com pdf-lib (carregado só ao gerar), períodos de 3/6/12 meses completos ou o ano; compartilha pelo menu do celular (WhatsApp) ou baixa. Sempre avisa que são valores registrados pelo motorista e que não é documento oficial. `lib/report/`.
+- **Lembrete diário** (Ajustes): Web Push padrão (RFC 8291/8292) implementado com WebCrypto em `lib/push/webpush.ts`, testado contra outra implementação (http_ece). Envio pela Edge Function `send-reminders` do Supabase, chamada a cada 15 min pelo pg_cron (`db/ops/reminders-cron.sql`), porque o plano grátis do Cloudflare limita CPU. Só avisa se o dia não foi fechado, 1 vez por dia. Chaves: VAPID e segredo do cron gerados e guardados direto nos segredos das funções e no Vault do Supabase (nunca no repositório); a chave pública fica em `lib/push/config.ts`. Deploy da função: `scripts/deploy-reminders.sh`. No iPhone só funciona com o Km+ instalado na tela inicial (iOS 16.4+).
+- Ideia de mostrar "corrida boa ou ruim" por cima do app da Uber/99: descartada (impossível no iPhone; no Android exige app nativo com leitura de tela, com risco de bloqueio da conta do motorista).

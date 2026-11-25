@@ -23,6 +23,61 @@ test.describe("signed-in settings", () => {
     ]);
   });
 
+  test("daily reminder: turns on with this device and off again", async ({
+    page,
+  }) => {
+    await grantPremium(user);
+    const endpoint = `https://push.example.com/e2e-${user.id}`;
+    // The test browser cannot reach a real push service: simulate one.
+    await page.addInitScript((ep) => {
+      let current: unknown = null;
+      const fake = {
+        toJSON: () => ({
+          endpoint: ep,
+          keys: { p256dh: "B" + "A".repeat(86), auth: "A".repeat(22) },
+        }),
+      };
+      PushManager.prototype.getSubscription = async () =>
+        current as PushSubscription | null;
+      PushManager.prototype.subscribe = async () =>
+        (current = fake) as unknown as PushSubscription;
+      Object.defineProperty(Notification, "permission", {
+        get: () => "granted",
+      });
+      Notification.requestPermission = async () => "granted";
+    }, endpoint);
+    await signIn(page, user, "/ajustes");
+    await page.getByLabel("Horário").selectOption("21:15");
+    await page
+      .getByRole("switch", { name: "Lembrete para fechar o dia" })
+      .click();
+    await expect(page.getByText("Às 21:15, se o dia ainda não")).toBeVisible();
+
+    const db = await adminClient();
+    const state = async () => {
+      const [{ data: p }, { data: subs }] = await Promise.all([
+        db
+          .from("profiles")
+          .select("reminder_enabled,reminder_time")
+          .eq("id", user.id)
+          .single(),
+        db.from("push_subscriptions").select("endpoint").eq("user_id", user.id),
+      ]);
+      return { ...p, subs: (subs ?? []).map((x) => x.endpoint) };
+    };
+    expect(await state()).toEqual({
+      reminder_enabled: true,
+      reminder_time: "21:15:00",
+      subs: [endpoint],
+    });
+
+    await page
+      .getByRole("switch", { name: "Lembrete para fechar o dia" })
+      .click();
+    await expect(page.getByText("Lembrete desligado.")).toBeVisible();
+    expect(await state()).toMatchObject({ reminder_enabled: false, subs: [] });
+  });
+
   test("edits goal and routine", async ({ page }) => {
     await signIn(page, user, "/ajustes");
     await page.getByLabel("Meta de sobra por mês").fill("7.500");

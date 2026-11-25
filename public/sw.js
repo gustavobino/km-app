@@ -7,7 +7,7 @@
  * - Everything else (API, Supabase, payments): network only, never cached.
  * Bump VERSION to drop old caches.
  */
-const VERSION = "v4";
+const VERSION = "v5";
 const STATIC_CACHE = `kmplus-static-${VERSION}`;
 const PAGE_CACHE = `kmplus-pages-${VERSION}`;
 const APP_ROUTES = [
@@ -122,4 +122,41 @@ self.addEventListener("fetch", (event) => {
   } else if (isStaticAsset(url)) {
     event.respondWith(cacheFirst(request));
   }
+});
+
+// Daily reminder (web push from supabase/functions/send-reminders).
+self.addEventListener("push", (event) => {
+  let data = { title: "Km+", body: "Fechou o dia? Registrar leva 20 segundos.", url: "/registrar" };
+  try {
+    if (event.data) data = { ...data, ...event.data.json() };
+  } catch {
+    // Keep the default text.
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      tag: "kmplus-reminder",
+      data: { url: data.url },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = new URL(event.notification.data?.url || "/registrar", self.location.origin).href;
+  event.waitUntil(
+    (async () => {
+      const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      for (const w of windows) {
+        if (w.url.startsWith(self.location.origin)) {
+          await w.focus();
+          if ("navigate" in w) await w.navigate(target);
+          return;
+        }
+      }
+      await self.clients.openWindow(target);
+    })(),
+  );
 });
