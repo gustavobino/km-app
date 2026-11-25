@@ -1,5 +1,5 @@
 import { expect, test } from "./support/fixtures";
-import { today } from "../lib/dates";
+import { addDays, today } from "../lib/dates";
 import {
   resetAccount,
   seedDays,
@@ -58,4 +58,39 @@ test("year summary: totals, best month and each app", async ({ page }) => {
       name: `Nenhum dia registrado em ${Number(year) - 1}`,
     }),
   ).toBeVisible();
+});
+
+test("earnings report: builds a PDF of the last months on the device", async ({
+  page,
+}) => {
+  // A day two months ago is inside "3 meses" (complete months before this one).
+  const t = today();
+  const twoMonthsAgo = `${addDays(`${t.slice(0, 7)}-01`, -40).slice(0, 7)}-10`;
+  await seedDays(user, [
+    {
+      date: twoMonthsAgo,
+      earnings: [{ source: "uber", amount_cents: 50000 }],
+    },
+  ]);
+  await signIn(page, user, "/painel/ano");
+  const card = page.getByRole("region", { name: "Relatório de ganhos" });
+  await card.getByRole("button", { name: "Gerar relatório" }).click();
+  const sheet = page.getByRole("dialog", { name: "Relatório de ganhos" });
+  await expect(sheet.getByRole("button", { name: "3 meses" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await sheet
+    .getByLabel("Seu nome no relatório (opcional)")
+    .fill("Maria Teste");
+  const download = page.waitForEvent("download");
+  await sheet.getByRole("button", { name: "Gerar PDF" }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toMatch(
+    /^kmplus-relatorio-\d{4}-\d{2}-a-\d{4}-\d{2}\.pdf$/,
+  );
+  const path = await file.path();
+  const { readFileSync } = await import("node:fs");
+  expect(readFileSync(path!).subarray(0, 5).toString()).toBe("%PDF-");
+  await expect(sheet).toContainText("Relatório pronto.");
 });

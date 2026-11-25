@@ -44,6 +44,7 @@ import {
 import type { PlatformSetting } from "@/lib/metrics/types";
 import { formatBRL } from "@/lib/money";
 import { formatHoursDecimal, formatKm } from "@/lib/units";
+import { EarningsReportCard } from "@/components/relatorio/EarningsReport";
 
 type Props = {
   userId: string;
@@ -280,6 +281,7 @@ export function Dashboard({
           <ArrowRightIcon />
         </span>
       </Link>
+      <EarningsReportCard userId={userId} platformSettings={platformSettings} />
     </Screen>
   );
 }

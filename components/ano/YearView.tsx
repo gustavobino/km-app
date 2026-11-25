@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Screen } from "@/components/layout/Screen";
 import { RateCards } from "@/components/painel/Dashboard";
+import { EarningsReportCard } from "@/components/relatorio/EarningsReport";
 import { LinkButton } from "@/components/ui/Button";
 import { CapsLabel, Card, HeroCard } from "@/components/ui/Card";
 import { DayBars } from "@/components/ui/DayBars";
@@ -215,6 +216,8 @@ export function YearView({ userId, platformSettings }: Props) {
           ))}
         </Card>
       ) : null}
+
+      <EarningsReportCard userId={userId} platformSettings={platformSettings} />
 
       <p className="px-1 text-[12px] font-semibold text-muted">
         Valores que você registrou no Km+. Servem para conferir sua renda, por
