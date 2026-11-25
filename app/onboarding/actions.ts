@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { LOGIN_PATH, HOME_PATH } from "@/lib/auth/redirect";
 import { toPayload } from "@/lib/onboarding";
@@ -68,6 +69,8 @@ export async function saveOnboarding(
     .eq("id", userId);
   if (error) return failed(error);
 
+  // Screens cached while the onboarding was pending pointed back to it.
+  revalidatePath("/", "layout");
   redirect(HOME_PATH);
 }
 

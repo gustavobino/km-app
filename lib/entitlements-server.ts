@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import {
   activePlan,
   type AccessUser,
@@ -7,7 +8,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 
 /** The signed-in user with their active plan (read through RLS). Null when signed out. */
-export async function getAccessUser(): Promise<
+export const getAccessUser = cache(async function getAccessUser(): Promise<
   (AccessUser & { email: string | null }) | null
 > {
   const supabase = await createClient();
@@ -22,4 +23,4 @@ export async function getAccessUser(): Promise<
     email: typeof data.claims.email === "string" ? data.claims.email : null,
     plan: activePlan((rows ?? []) as EntitlementRow[]),
   };
-}
+});

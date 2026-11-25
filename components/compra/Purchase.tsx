@@ -45,8 +45,8 @@ export function Purchase({ priceCents, refundDays, state }: Props) {
         const res = await fetch("/api/entitlement", { cache: "no-store" });
         if (res.ok && ((await res.json()) as { app: boolean }).app) {
           stopped = true;
-          router.replace("/registrar");
-          router.refresh();
+          // Full load: no screen remembered from before the purchase.
+          window.location.replace("/registrar");
           return;
         }
       } catch {

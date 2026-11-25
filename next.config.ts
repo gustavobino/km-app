@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    // Screens already visited or prefetched open from memory for 5 minutes
+    // (data lives on the device anyway; saving settings refreshes them).
+    staleTimes: { dynamic: 300, static: 300 },
+  },
   turbopack: {
     rules: {
       "*.css": {

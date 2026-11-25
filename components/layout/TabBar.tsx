@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ComponentType } from "react";
+import { useState, type ComponentType } from "react";
 import { cn } from "@/lib/cn";
 import {
   ChartIcon,
@@ -27,6 +27,11 @@ export const TABS: readonly Tab[] = [
 /** Fixed 76 px tab bar. Active tab: 56×30 ink pill with white icon + ink label. */
 export function TabBar() {
   const pathname = usePathname();
+  // The tapped tab lights up at once, before the next screen arrives.
+  const [tapped, setTapped] = useState<{ href: string; from: string } | null>(
+    null,
+  );
+  const current = tapped && tapped.from === pathname ? tapped.href : pathname;
   return (
     <nav
       aria-label="Navegação principal"
@@ -34,11 +39,13 @@ export function TabBar() {
     >
       <ul className="grid h-tabbar grid-cols-4 px-2 pt-2">
         {TABS.map(({ href, label, Icon }) => {
-          const active = pathname === href || pathname.startsWith(`${href}/`);
+          const active = current === href || current.startsWith(`${href}/`);
           return (
             <li key={href}>
               <Link
                 href={href}
+                // Whole screens are fetched in the background: switching tabs is instant.
+                prefetch
                 aria-current={active ? "page" : undefined}
                 onClick={(e) => {
                   // Offline, client-side navigation cannot fetch the next page;
@@ -46,7 +53,9 @@ export function TabBar() {
                   if (!navigator.onLine) {
                     e.preventDefault();
                     window.location.assign(href);
+                    return;
                   }
+                  if (!active) setTapped({ href, from: pathname });
                 }}
                 className={cn(
                   "flex min-h-touch flex-col items-center gap-1 rounded-xl text-xs",

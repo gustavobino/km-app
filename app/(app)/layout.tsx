@@ -3,20 +3,14 @@ import { SyncProvider } from "@/components/day/SyncProvider";
 import { TabBar } from "@/components/layout/TabBar";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import { LOGIN_PATH } from "@/lib/auth/redirect";
-import { createClient } from "@/lib/supabase/server";
+import { loadAppContext } from "@/lib/profile/server";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
-  const userId = data?.claims?.sub;
-  if (!userId) redirect(LOGIN_PATH);
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("onboarding_completed_at")
-    .eq("id", userId)
-    .maybeSingle();
-  if (!profile?.onboarding_completed_at) redirect("/onboarding");
+  // Same cached read the pages use: one round trip per screen.
+  const ctx = await loadAppContext();
+  if (!ctx) redirect(LOGIN_PATH);
+  if (!ctx.onboardingCompleted) redirect("/onboarding");
+  const userId = ctx.userId;
 
   return (
     <SyncProvider userId={userId}>
