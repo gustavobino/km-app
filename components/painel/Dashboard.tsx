@@ -268,6 +268,18 @@ export function Dashboard({
       />
       {data.apps ? <AppsCard comparison={data.apps} /> : null}
       {data.goal ? <GoalCard goal={data.goal} /> : null}
+      <Link
+        href="/painel/ano"
+        className="flex h-14 items-center justify-between rounded-card border border-border bg-surface px-4 text-[15px] font-extrabold"
+      >
+        Resumo do ano {todayDate.slice(0, 4)}
+        <span
+          aria-hidden="true"
+          className="flex size-8 items-center justify-center rounded-full bg-ink text-lime"
+        >
+          <ArrowRightIcon />
+        </span>
+      </Link>
     </Screen>
   );
 }
@@ -297,7 +309,7 @@ function VariationBadge({
   );
 }
 
-function RateCards(props: {
+export function RateCards(props: {
   minutes: number | null;
   km: number | null;
   perHour: number | null;

@@ -334,12 +334,12 @@ describe("todayGoal", () => {
   });
 
   it("marks today's goal as reached (and caps the bar)", () => {
-    expect(todayGoal(1_000_000, 400_000, 120_000, "2026-11-25")).toMatchObject(
-      { missingCents: 0, reachedToday: true, ratio: 1 },
-    );
-    expect(
-      todayGoal(1_000_000, 400_000, -5_000, "2026-11-25")?.ratio,
-    ).toBe(0);
+    expect(todayGoal(1_000_000, 400_000, 120_000, "2026-11-25")).toMatchObject({
+      missingCents: 0,
+      reachedToday: true,
+      ratio: 1,
+    });
+    expect(todayGoal(1_000_000, 400_000, -5_000, "2026-11-25")?.ratio).toBe(0);
   });
 
   it("says the month is done when the goal was reached before today", () => {

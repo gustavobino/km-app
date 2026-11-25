@@ -7,10 +7,17 @@
  * - Everything else (API, Supabase, payments): network only, never cached.
  * Bump VERSION to drop old caches.
  */
-const VERSION = "v3";
+const VERSION = "v4";
 const STATIC_CACHE = `kmplus-static-${VERSION}`;
 const PAGE_CACHE = `kmplus-pages-${VERSION}`;
-const APP_ROUTES = ["/registrar", "/painel", "/painel/lucro", "/simulador", "/insights"];
+const APP_ROUTES = [
+  "/registrar",
+  "/painel",
+  "/painel/lucro",
+  "/painel/ano",
+  "/simulador",
+  "/insights",
+];
 const OFFLINE_FALLBACK = "/registrar";
 
 /** Hashed assets a page needs (scripts, styles, fonts), found in its HTML. */
