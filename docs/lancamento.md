@@ -49,7 +49,7 @@ Marque cada item ao concluir. Itens com **(você)** dependem do dono do app; os 
 ## 5. Antes de abrir para o público
 
 - [x] **Migrar da Vercel para o Cloudflare** — feito em 24/11/2026: Worker `km-app`, domínio `kmmais.app.br` (nameservers do Registro.br apontando para o Cloudflare; registros do Resend como "DNS only"). Teste completo passou no domínio. Supabase: Site URL = `https://kmmais.app.br`.
-- [ ] **Backup semanal gratuito** do banco Supabase. (eu)
+- [ ] **Backup semanal gratuito** do banco Supabase: workflow pronto (`docs/backup.md`); falta cadastrar `SUPABASE_DB_URL` e `BACKUP_PASSPHRASE` no GitHub e rodar o primeiro. (você + eu)
 
 - [x] **E-mail próprio (SMTP)** — feito em 24/11/2026: domínio `kmmais.app.br` (Registro.br) verificado no Resend, Supabase enviando como `Km+ <nao-responda@kmmais.app.br>`, limite 30/h, modelo em português com código aplicado. Falta só `NEXT_PUBLIC_AUTH_OTP_CODE=true` na Vercel.
 - [x] **Domínio próprio** `kmmais.app.br` no Cloudflare (24/11/2026). Falta (você): trocar a URL do webhook no Mercado Pago para `https://kmmais.app.br/api/webhooks/mercadopago`.
