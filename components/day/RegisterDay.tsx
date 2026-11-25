@@ -5,7 +5,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { CapsLabel, Card, HeroCard } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
-import { ChevronDownIcon } from "@/components/ui/icons";
+import { ChevronDownIcon, CloseIcon } from "@/components/ui/icons";
+import Link from "next/link";
 import { Skeleton } from "@/components/ui/States";
 import { Switch } from "@/components/ui/Switch";
 import { cn } from "@/lib/cn";
@@ -52,6 +53,7 @@ type Props = {
   apps: string[];
   platformSettings: PlatformSetting[];
   monthlyGoalCents?: number | null;
+  reminderEnabled?: boolean;
 };
 
 type Saved = { at: number; offline: boolean };
@@ -61,6 +63,7 @@ export function RegisterDay({
   apps,
   platformSettings,
   monthlyGoalCents = null,
+  reminderEnabled = false,
 }: Props) {
   // Rendered only in the browser (see RegisterDayClient): the date comes from
   // the device, because the page HTML may be cached from another day.
@@ -127,6 +130,11 @@ export function RegisterDay({
     return summarizeRange(days, range, platformSettings, yesterday).netCents;
   }, [userId, todayDate, monthlyGoalCents, platformSettings]);
   const goalKey = `today-goal:${userId}:${todayDate}`;
+  const inviteKey = `reminder-invite-dismissed:${userId}`;
+  const inviteDismissed = useLiveQuery(
+    async () => Boolean(await getMeta<boolean>(localDb(), inviteKey)),
+    [inviteKey],
+  );
   // `null` when not set by hand (undefined while loading).
   const goalOverride = useLiveQuery(
     async () => (await getMeta<number>(localDb(), goalKey)) ?? null,
@@ -435,6 +443,27 @@ export function RegisterDay({
                 : "Dia fechado e salvo."
               : ""}
           </p>
+          {saved && !reminderEnabled && inviteDismissed === false ? (
+            <div className="flex items-center gap-2 rounded-card border border-border bg-surface py-1 pr-1 pl-4">
+              <span className="flex-1 text-[14px] font-bold">
+                Quer um lembrete para não esquecer?
+              </span>
+              <Link
+                href="/ajustes#lembrete"
+                className="flex h-touch items-center px-2 text-[14px] font-extrabold underline underline-offset-4"
+              >
+                Ligar lembrete
+              </Link>
+              <button
+                type="button"
+                aria-label="Agora não"
+                onClick={() => void setMeta(localDb(), inviteKey, true)}
+                className="flex size-touch items-center justify-center text-muted"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+          ) : null}
         </div>
       </form>
 

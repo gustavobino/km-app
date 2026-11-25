@@ -15,6 +15,7 @@ export default async function RegisterPage() {
       apps={ctx.apps}
       platformSettings={ctx.platformSettings}
       monthlyGoalCents={ctx.monthlyGoalCents}
+      reminderEnabled={ctx.reminderEnabled}
     />
   );
 }

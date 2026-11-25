@@ -440,3 +440,25 @@ test("today's goal can be set by hand and go back to automatic", async ({
     "Para manter a meta do mês em dia.",
   );
 });
+
+test("after closing the day, invites to turn on the reminder (dismissible)", async ({
+  page,
+}) => {
+  await signIn(page, user, "/registrar");
+  await page.getByLabel("Ganho Uber, em reais").fill("120");
+  await page.getByRole("button", { name: "Fechar o dia" }).click();
+  await expect(
+    page.getByText("Quer um lembrete para não esquecer?"),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Agora não" }).click();
+  await expect(
+    page.getByText("Quer um lembrete para não esquecer?"),
+  ).toBeHidden();
+  // Stays dismissed on this device.
+  await page.getByLabel("Ganho Uber, em reais").fill("130");
+  await page.getByRole("button", { name: "Salvar alterações" }).click();
+  await expect(page.getByText("Dia fechado e salvo.")).toBeVisible();
+  await expect(
+    page.getByText("Quer um lembrete para não esquecer?"),
+  ).toBeHidden();
+});

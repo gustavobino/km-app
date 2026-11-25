@@ -111,8 +111,9 @@ export function ReminderSettings({
   return (
     <Card
       as="section"
+      id="lembrete"
       aria-labelledby={`${timeId}-t`}
-      className="px-4 pt-3.5 pb-4"
+      className="scroll-mt-4 px-4 pt-3.5 pb-4"
     >
       <div className="flex items-center justify-between gap-3">
         <div>
@@ -161,7 +162,7 @@ export function ReminderSettings({
                 setTime(e.target.value);
                 if (enabled) save(true, e.target.value);
               }}
-              className="rounded-button h-touch border border-border bg-surface px-3 text-[16px] font-bold"
+              className="h-touch rounded-button border border-border bg-surface px-3 text-[16px] font-bold"
             >
               {reminderTimes().map((t) => (
                 <option key={t} value={t}>
