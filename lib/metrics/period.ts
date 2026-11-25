@@ -261,20 +261,27 @@ export type TodayGoal = {
   /** The month goal was already reached before today: anything now is extra. */
   monthReached: boolean;
   ratio: number;
+  /** The driver set today's goal by hand (instead of the one from the month goal). */
+  custom: boolean;
 };
 
 /**
  * "Meta de hoje": the rest of the month goal (before today) spread over the
- * days left including today, compared with what today already left.
+ * days left including today, compared with what today already left. A goal
+ * set by hand for today (`overrideCents`) replaces it.
  */
 export function todayGoal(
   goalCents: Cents | null,
   netBeforeTodayCents: Cents,
   todayNetCents: Cents,
   today: LocalDate,
+  overrideCents: Cents | null = null,
 ): TodayGoal | null {
-  if (!goalCents || goalCents <= 0) return null;
-  const remainingMonth = Math.max(0, goalCents - netBeforeTodayCents);
+  const custom = overrideCents != null && overrideCents > 0;
+  if (!custom && (!goalCents || goalCents <= 0)) return null;
+  const remainingMonth = custom
+    ? overrideCents
+    : Math.max(0, goalCents! - netBeforeTodayCents);
   if (remainingMonth === 0)
     return {
       targetCents: 0,
@@ -283,8 +290,11 @@ export function todayGoal(
       reachedToday: true,
       monthReached: true,
       ratio: 1,
+      custom: false,
     };
-  const target = divideRound(remainingMonth, remainingDaysInMonth(today))!;
+  const target = custom
+    ? overrideCents
+    : divideRound(remainingMonth, remainingDaysInMonth(today))!;
   const missing = Math.max(0, target - todayNetCents);
   return {
     targetCents: target,
@@ -293,5 +303,6 @@ export function todayGoal(
     reachedToday: missing === 0,
     monthReached: false,
     ratio: Math.max(0, Math.min(1, todayNetCents / target)),
+    custom,
   };
 }

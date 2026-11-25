@@ -330,6 +330,7 @@ describe("todayGoal", () => {
       reachedToday: false,
       monthReached: false,
       ratio: 0.4,
+      custom: false,
     });
   });
 
@@ -348,6 +349,23 @@ describe("todayGoal", () => {
       reachedToday: true,
       targetCents: 0,
     });
+  });
+
+  it("uses a goal set by hand for today, even without a month goal", () => {
+    expect(todayGoal(null, 0, 10_000, "2026-11-25", 30_000)).toMatchObject({
+      targetCents: 30_000,
+      missingCents: 20_000,
+      custom: true,
+      monthReached: false,
+    });
+    // Also when the month goal is already reached.
+    expect(
+      todayGoal(1_000_000, 1_050_000, 0, "2026-11-25", 25_000),
+    ).toMatchObject({ targetCents: 25_000, monthReached: false, custom: true });
+    // Zero or null override = automatic goal.
+    expect(
+      todayGoal(1_000_000, 400_000, 0, "2026-11-25", 0)?.custom,
+    ).toBe(false);
   });
 
   it("needs a goal; last day of the month takes everything left", () => {

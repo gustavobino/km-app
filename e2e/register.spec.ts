@@ -389,7 +389,9 @@ test("shows today's goal from the month goal and updates while typing", async ({
   const target = Math.round(300000 / remainingDaysInMonth(today()));
   const card = page.getByLabel("Meta de hoje", { exact: true });
   await expect(card).toContainText(formatBRL(target, { cents: false }));
-  await expect(card).toContainText(`Faltam ${formatBRL(target, { cents: false })}`);
+  await expect(card).toContainText(
+    `Faltam ${formatBRL(target, { cents: false })}`,
+  );
 
   await page.getByLabel("Ganho Uber, em reais").fill("50");
   await expect(card).toContainText(
@@ -399,4 +401,42 @@ test("shows today's goal from the month goal and updates while typing", async ({
     .getByLabel("Ganho Uber, em reais")
     .fill(String(Math.ceil(target / 100) + 10));
   await expect(card).toContainText("Batida!");
+});
+
+test("today's goal can be set by hand and go back to automatic", async ({
+  page,
+}) => {
+  await signIn(page, user, "/registrar");
+  // No month goal: a discreet invitation.
+  await expect(page.getByText("Quer uma meta para hoje?")).toBeVisible();
+  await page.getByRole("button", { name: "Definir" }).click();
+  const sheet = page.getByRole("dialog", { name: "Meta de hoje" });
+  await sheet.getByLabel("Quanto você quer que sobre hoje").fill("300");
+  await sheet.getByRole("button", { name: "Salvar meta de hoje" }).click();
+  const card = page.getByLabel("Meta de hoje", { exact: true });
+  await expect(card).toContainText("R$ 300");
+  await expect(card).toContainText("Meta que você escolheu para hoje.");
+  await page.getByLabel("Ganho Uber, em reais").fill("100");
+  await expect(card).toContainText("Faltam R$ 200");
+
+  // Kept on the device after reloading.
+  await page.reload();
+  await expect(page.getByLabel("Meta de hoje", { exact: true })).toContainText(
+    "R$ 300",
+  );
+
+  // With a month goal, "Voltar para a meta automática" removes the manual one.
+  await setProfile(user, { monthly_goal_cents: 300000 });
+  await page.reload();
+  await page.getByRole("button", { name: "Ajustar" }).click();
+  await sheet
+    .getByRole("button", { name: "Voltar para a meta automática" })
+    .click();
+  const target = Math.round(300000 / remainingDaysInMonth(today()));
+  await expect(page.getByLabel("Meta de hoje", { exact: true })).toContainText(
+    formatBRL(target, { cents: false }),
+  );
+  await expect(page.getByLabel("Meta de hoje", { exact: true })).toContainText(
+    "Para manter a meta do mês em dia.",
+  );
 });

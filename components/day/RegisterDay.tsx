@@ -23,7 +23,13 @@ import {
   type FieldErrors,
 } from "@/lib/day/form";
 import { localDb } from "@/lib/local/db";
-import { getLocalDay, listLocalDays, saveLocalDay } from "@/lib/local/days";
+import {
+  getLocalDay,
+  getMeta,
+  listLocalDays,
+  saveLocalDay,
+  setMeta,
+} from "@/lib/local/days";
 import { summarizeRange, todayGoal } from "@/lib/metrics/period";
 import type {
   ExpenseCategory,
@@ -112,7 +118,7 @@ export function RegisterDay({
 
   // "Meta de hoje": what the month already left before today (on the device).
   const netBeforeToday = useLiveQuery(async () => {
-    if (!monthlyGoalCents) return null;
+    if (!monthlyGoalCents) return 0;
     const month = monthRange(todayDate);
     if (todayDate === month.start) return 0;
     const yesterday = addDays(todayDate, -1);
@@ -120,6 +126,12 @@ export function RegisterDay({
     const days = await listLocalDays(localDb(), userId, range);
     return summarizeRange(days, range, platformSettings, yesterday).netCents;
   }, [userId, todayDate, monthlyGoalCents, platformSettings]);
+  const goalKey = `today-goal:${userId}:${todayDate}`;
+  // `null` when not set by hand (undefined while loading).
+  const goalOverride = useLiveQuery(
+    async () => (await getMeta<number>(localDb(), goalKey)) ?? null,
+    [goalKey],
+  );
 
   if (!form || !summary) {
     return (
@@ -242,17 +254,27 @@ export function RegisterDay({
         sync={sync}
       />
 
-      {isToday && !form.isDayOff && netBeforeToday != null
-        ? (() => {
-            const goal = todayGoal(
-              monthlyGoalCents,
-              netBeforeToday,
-              summary.netCents,
-              todayDate,
-            );
-            return goal ? <TodayGoalCard goal={goal} /> : null;
-          })()
-        : null}
+      {isToday &&
+      !form.isDayOff &&
+      netBeforeToday !== undefined &&
+      goalOverride !== undefined ? (
+        <TodayGoalCard
+          goal={todayGoal(
+            monthlyGoalCents,
+            netBeforeToday,
+            summary.netCents,
+            todayDate,
+            goalOverride,
+          )}
+          monthGoalCents={monthlyGoalCents}
+          onChange={(cents) => {
+            const db = localDb();
+            void (cents == null
+              ? db.meta.delete(goalKey)
+              : setMeta(db, goalKey, cents));
+          }}
+        />
+      ) : null}
 
       <form
         ref={formRef}
