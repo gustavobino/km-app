@@ -5,6 +5,7 @@ import {
   compareApps,
   elapsedRange,
   monthGoal,
+  todayGoal,
   periodRange,
   summarizeRange,
   variation,
@@ -316,5 +317,42 @@ describe("monthGoal", () => {
     expect(monthGoal(-5000, 800000, "2026-11-30")?.ratio).toBe(0);
     expect(monthGoal(1000, null, "2026-11-30")).toBeNull();
     expect(monthGoal(1000, 0, "2026-11-30")).toBeNull();
+  });
+});
+
+describe("todayGoal", () => {
+  // Goal R$ 10.000; R$ 4.000 before today; 25/11 → 6 days left (25..30).
+  it("spreads the rest of the month goal over the days left", () => {
+    expect(todayGoal(1_000_000, 400_000, 40_000, "2026-11-25")).toEqual({
+      targetCents: 100_000,
+      todayNetCents: 40_000,
+      missingCents: 60_000,
+      reachedToday: false,
+      monthReached: false,
+      ratio: 0.4,
+    });
+  });
+
+  it("marks today's goal as reached (and caps the bar)", () => {
+    expect(todayGoal(1_000_000, 400_000, 120_000, "2026-11-25")).toMatchObject(
+      { missingCents: 0, reachedToday: true, ratio: 1 },
+    );
+    expect(
+      todayGoal(1_000_000, 400_000, -5_000, "2026-11-25")?.ratio,
+    ).toBe(0);
+  });
+
+  it("says the month is done when the goal was reached before today", () => {
+    expect(todayGoal(1_000_000, 1_050_000, 0, "2026-11-25")).toMatchObject({
+      monthReached: true,
+      reachedToday: true,
+      targetCents: 0,
+    });
+  });
+
+  it("needs a goal; last day of the month takes everything left", () => {
+    expect(todayGoal(null, 0, 0, "2026-11-25")).toBeNull();
+    expect(todayGoal(0, 0, 0, "2026-11-25")).toBeNull();
+    expect(todayGoal(600_000, 0, 0, "2026-11-30")?.targetCents).toBe(600_000);
   });
 });

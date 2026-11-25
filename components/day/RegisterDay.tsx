@@ -9,7 +9,7 @@ import { ChevronDownIcon } from "@/components/ui/icons";
 import { Skeleton } from "@/components/ui/States";
 import { Switch } from "@/components/ui/Switch";
 import { cn } from "@/lib/cn";
-import { addDays, today, type LocalDate } from "@/lib/dates";
+import { addDays, monthRange, today, type LocalDate } from "@/lib/dates";
 import {
   EXPENSE_LABELS,
   SHIFT_LABELS,
@@ -23,7 +23,8 @@ import {
   type FieldErrors,
 } from "@/lib/day/form";
 import { localDb } from "@/lib/local/db";
-import { getLocalDay, saveLocalDay } from "@/lib/local/days";
+import { getLocalDay, listLocalDays, saveLocalDay } from "@/lib/local/days";
+import { summarizeRange, todayGoal } from "@/lib/metrics/period";
 import type {
   ExpenseCategory,
   PlatformSetting,
@@ -34,6 +35,7 @@ import { DayHeader } from "./DayHeader";
 import { EarningsCard } from "./EarningsCard";
 import { ExpenseSheet } from "./ExpenseSheet";
 import { useSyncState } from "./SyncProvider";
+import { TodayGoalCard } from "./TodayGoalCard";
 
 const MAIN_CATEGORIES: ExpenseCategory[] = ["fuel", "food", "toll", "other"];
 const EXTRA_CATEGORIES: ExpenseCategory[] = ["parking", "wash"];
@@ -43,11 +45,17 @@ type Props = {
   userId: string;
   apps: string[];
   platformSettings: PlatformSetting[];
+  monthlyGoalCents?: number | null;
 };
 
 type Saved = { at: number; offline: boolean };
 
-export function RegisterDay({ userId, apps, platformSettings }: Props) {
+export function RegisterDay({
+  userId,
+  apps,
+  platformSettings,
+  monthlyGoalCents = null,
+}: Props) {
   // Rendered only in the browser (see RegisterDayClient): the date comes from
   // the device, because the page HTML may be cached from another day.
   const [todayDate] = useState<LocalDate>(() => today());
@@ -101,6 +109,17 @@ export function RegisterDay({ userId, apps, platformSettings }: Props) {
     () => (form ? liveSummary(form, platformSettings) : null),
     [form, platformSettings],
   );
+
+  // "Meta de hoje": what the month already left before today (on the device).
+  const netBeforeToday = useLiveQuery(async () => {
+    if (!monthlyGoalCents) return null;
+    const month = monthRange(todayDate);
+    if (todayDate === month.start) return 0;
+    const yesterday = addDays(todayDate, -1);
+    const range = { start: month.start, end: yesterday };
+    const days = await listLocalDays(localDb(), userId, range);
+    return summarizeRange(days, range, platformSettings, yesterday).netCents;
+  }, [userId, todayDate, monthlyGoalCents, platformSettings]);
 
   if (!form || !summary) {
     return (
@@ -222,6 +241,18 @@ export function RegisterDay({ userId, apps, platformSettings }: Props) {
         onToday={isToday ? undefined : () => goTo(todayDate)}
         sync={sync}
       />
+
+      {isToday && !form.isDayOff && netBeforeToday != null
+        ? (() => {
+            const goal = todayGoal(
+              monthlyGoalCents,
+              netBeforeToday,
+              summary.netCents,
+              todayDate,
+            );
+            return goal ? <TodayGoalCard goal={goal} /> : null;
+          })()
+        : null}
 
       <form
         ref={formRef}

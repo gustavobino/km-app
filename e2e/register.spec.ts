@@ -1,12 +1,14 @@
 import { expect, test } from "./support/fixtures";
 import type { Page } from "@playwright/test";
-import { addDays, today } from "../lib/dates";
+import { addDays, remainingDaysInMonth, today } from "../lib/dates";
+import { formatBRL } from "../lib/money";
 import {
   adminClient,
   createTestUser,
   deleteTestUser,
   grantPremium,
   resetAccount,
+  setProfile,
   signIn,
   type TestUser,
 } from "./support/supabase";
@@ -376,4 +378,25 @@ test.describe("zeroing a day", () => {
       )
       .toBe(0);
   });
+});
+
+test("shows today's goal from the month goal and updates while typing", async ({
+  page,
+}) => {
+  await setProfile(user, { monthly_goal_cents: 300000 });
+  await signIn(page, user, "/registrar");
+  // No days before today: R$ 3.000 spread over the days left (today included).
+  const target = Math.round(300000 / remainingDaysInMonth(today()));
+  const card = page.getByLabel("Meta de hoje", { exact: true });
+  await expect(card).toContainText(formatBRL(target, { cents: false }));
+  await expect(card).toContainText(`Faltam ${formatBRL(target, { cents: false })}`);
+
+  await page.getByLabel("Ganho Uber, em reais").fill("50");
+  await expect(card).toContainText(
+    `Faltam ${formatBRL(target - 5000, { cents: false })}`,
+  );
+  await page
+    .getByLabel("Ganho Uber, em reais")
+    .fill(String(Math.ceil(target / 100) + 10));
+  await expect(card).toContainText("Batida!");
 });

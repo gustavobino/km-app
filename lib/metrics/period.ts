@@ -250,3 +250,48 @@ export function monthGoal(
     perDayCents: divideRound(remaining, daysLeft)!,
   };
 }
+
+export type TodayGoal = {
+  /** What today should leave in the pocket to keep the month goal on track. */
+  targetCents: Cents;
+  todayNetCents: Cents;
+  /** Still missing today (0 once reached). */
+  missingCents: Cents;
+  reachedToday: boolean;
+  /** The month goal was already reached before today: anything now is extra. */
+  monthReached: boolean;
+  ratio: number;
+};
+
+/**
+ * "Meta de hoje": the rest of the month goal (before today) spread over the
+ * days left including today, compared with what today already left.
+ */
+export function todayGoal(
+  goalCents: Cents | null,
+  netBeforeTodayCents: Cents,
+  todayNetCents: Cents,
+  today: LocalDate,
+): TodayGoal | null {
+  if (!goalCents || goalCents <= 0) return null;
+  const remainingMonth = Math.max(0, goalCents - netBeforeTodayCents);
+  if (remainingMonth === 0)
+    return {
+      targetCents: 0,
+      todayNetCents,
+      missingCents: 0,
+      reachedToday: true,
+      monthReached: true,
+      ratio: 1,
+    };
+  const target = divideRound(remainingMonth, remainingDaysInMonth(today))!;
+  const missing = Math.max(0, target - todayNetCents);
+  return {
+    targetCents: target,
+    todayNetCents,
+    missingCents: missing,
+    reachedToday: missing === 0,
+    monthReached: false,
+    ratio: Math.max(0, Math.min(1, todayNetCents / target)),
+  };
+}

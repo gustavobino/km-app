@@ -14,6 +14,7 @@ export default async function RegisterPage() {
       userId={ctx.userId}
       apps={ctx.apps}
       platformSettings={ctx.platformSettings}
+      monthlyGoalCents={ctx.monthlyGoalCents}
     />
   );
 }
