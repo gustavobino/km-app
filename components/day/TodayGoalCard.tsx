@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useId, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { CapsLabel, Card } from "@/components/ui/Card";
+import { CapsLabel, Card, HeroCard } from "@/components/ui/Card";
 import { MoneyInput } from "@/components/ui/MoneyInput";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Sheet } from "@/components/ui/Sheet";
@@ -56,23 +56,32 @@ export function TodayGoalCard({ goal, monthGoalCents, onChange }: Props) {
 
   if (goal.monthReached)
     return (
-      <Card className="flex items-center justify-between gap-3 px-4 py-3">
+      <HeroCard
+        as="div"
+        radius="hero-md"
+        className="flex items-center justify-between gap-3 px-4.5 py-3.5"
+      >
         <div>
-          <CapsLabel>Meta do mês batida</CapsLabel>
+          <CapsLabel onLime>Meta do mês batida</CapsLabel>
           <p className="mt-1 text-[15px] font-bold">
             O que entrar hoje é extra no bolso.
           </p>
         </div>
         {edit}
         {sheet}
-      </Card>
+      </HeroCard>
     );
 
   return (
-    <Card className="px-4 py-3" aria-label="Meta de hoje">
+    <HeroCard
+      as="div"
+      radius="hero-md"
+      className="px-4.5 pt-3.5 pb-2"
+      aria-label="Meta de hoje"
+    >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <CapsLabel>Meta de hoje</CapsLabel>
+          <CapsLabel onLime>Meta de hoje</CapsLabel>
           <div className="mt-0.5 font-display text-[24px] leading-none font-extrabold tracking-hero">
             {brl(goal.targetCents)}
           </div>
@@ -88,12 +97,13 @@ export function TodayGoalCard({ goal, monthGoalCents, onChange }: Props) {
         </div>
       </div>
       <ProgressBar
+        onLime
         className="mt-2.5"
         ratio={goal.ratio}
         label={`${Math.round(goal.ratio * 100)}% da meta de hoje`}
       />
       <div className="mt-0.5 flex items-center justify-between">
-        <p className="text-[12px] font-semibold text-muted">
+        <p className="text-[12px] font-semibold text-lime-text">
           {goal.custom
             ? "Meta que você escolheu para hoje."
             : "Para manter a meta do mês em dia."}
@@ -101,7 +111,7 @@ export function TodayGoalCard({ goal, monthGoalCents, onChange }: Props) {
         {edit}
       </div>
       {sheet}
-    </Card>
+    </HeroCard>
   );
 }
 
