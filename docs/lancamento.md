@@ -56,7 +56,7 @@ Marque cada item ao concluir. Itens com **(você)** dependem do dono do app; os 
 - [x] **Revisão jurídica** de `legal/termos.md` e `legal/privacidade.md` — feita (24/11/2026); marca RASCUNHO removida. Fornecedores atualizados: Cloudflare (hospedagem) e Resend (e-mail).
 - [ ] **Custos de referência** em `docs/custos.md`: revisar os placeholders e marcar `is_placeholder = false`. (você)
 - [x] **Mercado Pago produção** (24/11/2026): credenciais de produção no Cloudflare (checkout criado na conta real), webhook de produção em `https://kmmais.app.br/api/webhooks/mercadopago` com assinatura nova (simulação respondeu 200). Ainda vale renovar o token de teste que foi colado no chat.
-- [ ] **Compra real** de R$ 17,90 e estorno, para conferir.
+- [x] **Compra real** de R$ 17,90 por Pix e estorno (24/11/2026): aprovado → acesso liberado em 2 s; estorno → acesso revogado em segundos, ambos pelo webhook.
 - [x] **Logo e ícones:** o dono decidiu manter o wordmark "Km+" atual no lançamento (24/11/2026).
 - [ ] Supabase em plano pago ou backups (o plano grátis pausa projetos parados e não tem backup diário).
 - [ ] Login com Google (opcional, decidido para depois).
