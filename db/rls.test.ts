@@ -65,11 +65,16 @@ describe("schema", () => {
       expect(row.relrowsecurity, row.relname).toBe(true);
   });
 
-  it("seeds cost_reference flagged as placeholders", async () => {
-    const r = await db.query<{ n: number }>(
-      `select count(*)::int as n from public.cost_reference where is_placeholder`,
+  it("seeds researched cost_reference rows; only SUV is still a placeholder", async () => {
+    const r = await db.query<{ category: string; n: number }>(
+      `select category, count(*)::int as n from public.cost_reference
+       where is_placeholder group by category`,
     );
-    expect(r.rows[0]!.n).toBe(12);
+    expect(r.rows).toEqual([{ category: "suv", n: 3 }]);
+    const all = await db.query<{ n: number }>(
+      `select count(*)::int as n from public.cost_reference`,
+    );
+    expect(all.rows[0]!.n).toBe(12);
   });
 
   it("allows only one day per user and date", async () => {

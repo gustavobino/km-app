@@ -291,9 +291,13 @@ export function Lucro({ userId, platformSettings, vehicleContext }: Props) {
               </span>
             </div>
             <p className="mt-3 text-[12px] font-semibold text-muted">
-              {reserve.perKm.usesPlaceholder
-                ? "Valores de referência provisórios. Para ficar mais perto da sua realidade, informe os dados do seu carro."
-                : "Estimativa com os valores que você informou."}{" "}
+              {reserve.perKm.modelName
+                ? `Médias do ${reserve.perKm.modelName}: revisões da montadora, freios, suspensão e pneus. Carros com mais uso costumam gastar mais; seus gastos de manutenção ajustam a conta.`
+                : reserve.perKm.usesPlaceholder
+                  ? "Valores de referência provisórios. Para ficar mais perto da sua realidade, informe o modelo do seu carro."
+                  : reserve.perKm.maintenanceSource === "reference"
+                    ? "Médias do tipo de carro. Informe o modelo para ficar mais perto da sua realidade."
+                    : "Estimativa com os valores que você informou."}{" "}
               Não é aconselhamento financeiro.
             </p>
             <Button

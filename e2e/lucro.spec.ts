@@ -126,7 +126,7 @@ test("shows the example month and the car reserve as an estimate", async ({
   ).toContainText("R$ 1.560,00");
 });
 
-test("rented car adds the rent and placeholders are disclosed", async ({
+test("rented car adds the rent and uses the category or model averages", async ({
   page,
 }) => {
   await seedDays(user, [
@@ -144,8 +144,24 @@ test("rented car adds the rent and placeholders are disclosed", async ({
   await signIn(page, user, "/painel/lucro");
   const vehicle = page.getByRole("region", { name: "Modo veículo" });
   await expect(vehicle).toContainText("+ aluguel por dia");
-  await expect(vehicle).toContainText("Valores de referência provisórios");
+  await expect(vehicle).toContainText("Médias do tipo de carro");
   await expect(vehicle).toContainText("Não é aconselhamento financeiro");
+
+  // Typing the model: the app recognises it and uses that model's averages.
+  await vehicle.getByRole("button", { name: "Editar valores" }).click();
+  const sheet = page.getByRole("dialog", { name: "Valores do carro" });
+  await sheet.getByLabel("Modelo", { exact: true }).fill("Kwid 1.0");
+  await expect(sheet).toContainText("Reconhecemos: Renault Kwid");
+  await sheet.getByLabel("Ano", { exact: true }).fill("2020");
+  await sheet.getByRole("button", { name: "Salvar valores" }).click();
+  await expect(sheet).toBeHidden();
+  await page.reload();
+  await expect(
+    page.getByRole("region", { name: "Modo veículo" }),
+  ).toContainText("Médias do Renault Kwid");
+  await expect(
+    page.getByRole("region", { name: "Modo veículo" }),
+  ).toContainText("Kwid 1.0 · 2020");
 });
 
 test("friendly empty month", async ({ page }) => {

@@ -8,6 +8,7 @@ import { MoneyInput } from "@/components/ui/MoneyInput";
 import { Segmented } from "@/components/ui/Segmented";
 import { Sheet } from "@/components/ui/Sheet";
 import type { PerKmBreakdown } from "@/lib/metrics/vehicle";
+import { findVehicleModel, VEHICLE_MODELS } from "@/lib/metrics/vehicle-models";
 import { formatBRL, parseBRL, toInputBRL } from "@/lib/money";
 import type { VehicleContext } from "@/lib/profile/vehicle-server";
 import type { VehicleInput } from "@/lib/schemas/vehicle";
@@ -61,6 +62,7 @@ export function VehicleSheet({ context, perKm, onClose, onSave }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const id = useId();
+  const known = findVehicleModel(brand, model);
 
   function money(text: string, label: string): number | null | undefined {
     if (!text.trim()) return null;
@@ -92,7 +94,7 @@ export function VehicleSheet({ context, perKm, onClose, onSave }: Props) {
       brand: brand.trim() || null,
       model: model.trim() || null,
       year: y,
-      category,
+      category: category ?? known?.category ?? null,
       rentCents: values.rentCents ?? null,
       rentPeriod: values.rentCents != null ? rentPeriod : null,
       installmentCents: values.installmentCents ?? null,
@@ -148,9 +150,25 @@ export function VehicleSheet({ context, perKm, onClose, onSave }: Props) {
             label="Modelo"
             value={model}
             onChange={setModel}
-            placeholder="Ex.: Onix 1.0"
+            placeholder="Ex.: Kwid"
+            list={`${id}-models`}
           />
+          <datalist id={`${id}-models`}>
+            {VEHICLE_MODELS.map((m) => (
+              <option key={m.id} value={m.model} />
+            ))}
+          </datalist>
         </div>
+        <p
+          aria-live="polite"
+          className="-mt-1 px-1 text-[13px] font-semibold text-muted"
+        >
+          {known
+            ? `Reconhecemos: ${known.brand} ${known.model}. A reserva usa as médias desse modelo (estimativa).`
+            : model.trim()
+              ? "Modelo fora da nossa lista: usamos a média do tipo de carro."
+              : null}
+        </p>
         <div className="grid grid-cols-[1fr_2fr] gap-gap-card">
           <TextField
             id={`${id}-year`}
@@ -231,7 +249,9 @@ export function VehicleSheet({ context, perKm, onClose, onSave }: Props) {
             hint={
               perKm.maintenanceSource === "history"
                 ? "estimado dos seus gastos"
-                : "em branco = referência"
+                : known
+                  ? "em branco = média do modelo"
+                  : "em branco = referência"
             }
           />
           <MoneyField
@@ -242,7 +262,7 @@ export function VehicleSheet({ context, perKm, onClose, onSave }: Props) {
             placeholder={toInputBRL(
               Math.round(perKm.tiresSource === "driver" ? 0 : perKm.tires),
             )}
-            hint="em branco = referência"
+            hint={known ? "em branco = média do modelo" : "em branco = referência"}
           />
         </div>
         <p className="text-[12px] font-semibold text-muted">
@@ -297,6 +317,7 @@ function TextField(props: {
   onChange: (v: string) => void;
   placeholder?: string;
   inputMode?: "numeric";
+  list?: string;
 }) {
   return (
     <FieldCard id={props.id} label={props.label}>
@@ -304,6 +325,8 @@ function TextField(props: {
         id={props.id}
         value={props.value}
         inputMode={props.inputMode}
+        list={props.list}
+        autoComplete="off"
         maxLength={props.inputMode ? 4 : 60}
         placeholder={props.placeholder}
         onChange={(e) => props.onChange(e.target.value)}

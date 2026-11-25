@@ -9,6 +9,11 @@
 import { daysInMonth, eachDay, type DateRange, type LocalDate } from "../dates";
 import { divideRound, type Cents } from "../money";
 import type { DayData, PassPeriod } from "./types";
+import {
+  findVehicleModel,
+  modelMaintenanceCentsPerKm,
+  TIRES_CENTS_PER_KM,
+} from "./vehicle-models";
 
 export type Ownership = "own" | "rented" | "financed";
 export type Category = "compact" | "sedan" | "suv" | "other";
@@ -23,6 +28,9 @@ export type CostReference = {
 };
 
 export type Vehicle = {
+  /** What the driver typed; used to recognise the model (vehicle-models.ts). */
+  brand?: string | null;
+  model?: string | null;
   category: Category | null;
   year: number | null;
   rentCents: Cents | null;
@@ -90,8 +98,10 @@ export type PerKmBreakdown = {
   insuranceAndTax: number;
   total: number;
   /** Where the maintenance number came from. */
-  maintenanceSource: "driver" | "history" | "reference";
-  tiresSource: "driver" | "reference";
+  maintenanceSource: "driver" | "history" | "model" | "reference";
+  tiresSource: "driver" | "model" | "reference";
+  /** The recognised model ("Renault Kwid"), when its averages are in use. */
+  modelName: string | null;
   /** A placeholder reference value was used somewhere. */
   usesPlaceholder: boolean;
 };
@@ -105,7 +115,8 @@ export function perKmBreakdown(
     ownMaintenancePerKm: number | null;
   },
 ): PerKmBreakdown {
-  const category = vehicle?.category ?? "other";
+  const known = findVehicleModel(vehicle?.brand, vehicle?.model);
+  const category = vehicle?.category ?? known?.category ?? "other";
   const band = ageBand(vehicle?.year ?? null, opts.currentYear);
   const ref = reference.find(
     (r) => r.category === category && r.ageBand === band,
@@ -119,15 +130,26 @@ export function perKmBreakdown(
   } else if (opts.ownMaintenancePerKm != null) {
     maintenance = opts.ownMaintenancePerKm;
     maintenanceSource = "history";
+  } else if (known) {
+    maintenance = modelMaintenanceCentsPerKm(known);
+    maintenanceSource = "model";
   } else {
     maintenance = ref?.maintenanceCentsPerKm ?? 0;
     maintenanceSource = "reference";
   }
 
-  const tiresFromDriver = vehicle?.tiresCentsPerKm != null;
-  const tires = tiresFromDriver
-    ? vehicle!.tiresCentsPerKm!
-    : (ref?.tiresCentsPerKm ?? 0);
+  let tires: number;
+  let tiresSource: PerKmBreakdown["tiresSource"];
+  if (vehicle?.tiresCentsPerKm != null) {
+    tires = vehicle.tiresCentsPerKm;
+    tiresSource = "driver";
+  } else if (known) {
+    tires = TIRES_CENTS_PER_KM;
+    tiresSource = "model";
+  } else {
+    tires = ref?.tiresCentsPerKm ?? 0;
+    tiresSource = "reference";
+  }
 
   const yearly =
     (vehicle?.insuranceYearCents ?? 0) + (vehicle?.ipvaYearCents ?? 0);
@@ -135,7 +157,7 @@ export function perKmBreakdown(
 
   const usesPlaceholder =
     Boolean(ref?.isPlaceholder) &&
-    (maintenanceSource === "reference" || !tiresFromDriver);
+    (maintenanceSource === "reference" || tiresSource === "reference");
 
   return {
     maintenance,
@@ -143,7 +165,11 @@ export function perKmBreakdown(
     insuranceAndTax,
     total: maintenance + tires + insuranceAndTax,
     maintenanceSource,
-    tiresSource: tiresFromDriver ? "driver" : "reference",
+    tiresSource,
+    modelName:
+      known && (maintenanceSource === "model" || tiresSource === "model")
+        ? `${known.brand} ${known.model}`
+        : null,
     usesPlaceholder,
   };
 }

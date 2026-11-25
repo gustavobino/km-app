@@ -163,8 +163,49 @@ describe("perKmBreakdown", () => {
       total: 11,
       maintenanceSource: "reference",
       tiresSource: "reference",
+      modelName: null,
       usesPlaceholder: true,
     });
+  });
+
+  it("uses the averages of a recognised model before the category", () => {
+    const kwid = perKmBreakdown(
+      car({ brand: null, model: "Kwid Zen 1.0", category: null }),
+      REF,
+      opts,
+    );
+    expect(kwid).toMatchObject({
+      maintenanceSource: "model",
+      tiresSource: "model",
+      modelName: "Renault Kwid",
+      usesPlaceholder: false,
+    });
+    // 373.800 / 50.000 + 7,90 (brakes + suspension) ≈ 15,38 ¢/km; tires ≈ 5,23.
+    expect(kwid.maintenance).toBeCloseTo(15.38, 2);
+    expect(kwid.tires).toBeCloseTo(5.23, 2);
+
+    // The driver's own numbers and history still win; tires stay from the model.
+    const mixed = perKmBreakdown(car({ model: "Onix" }), REF, {
+      ...opts,
+      ownMaintenancePerKm: 25,
+    });
+    expect(mixed).toMatchObject({
+      maintenance: 25,
+      maintenanceSource: "history",
+      tiresSource: "model",
+      modelName: "Chevrolet Onix",
+    });
+    const own = perKmBreakdown(
+      car({ model: "Onix", maintenanceCentsPerKm: 20, tiresCentsPerKm: 4 }),
+      REF,
+      opts,
+    );
+    expect(own.modelName).toBeNull();
+
+    // Unknown model: category reference.
+    expect(
+      perKmBreakdown(car({ model: "Fusca" }), REF, opts).maintenanceSource,
+    ).toBe("reference");
   });
 
   it("adds insurance + IPVA spread over the km per year", () => {

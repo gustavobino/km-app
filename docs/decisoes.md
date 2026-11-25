@@ -173,3 +173,10 @@ Regras em `lib/insights` (limiares em `INSIGHTS`), cada uma com testes abaixo/no
 
 ## Zerar um dia (24/11/2026, relato do dono)
 - Antes, um dia já salvo não podia ser zerado: a regra "informe pelo menos um ganho" bloqueava. Agora, ao **editar** um dia salvo, apagar tudo e salvar deixa o dia zerado; e há o botão **"Apagar os dados deste dia"** (com confirmação). Para um dia **novo**, a regra continua (evita fechar um dia vazio sem querer).
+
+## Custos por modelo de carro (25/11/2026)
+
+- O motorista digita o modelo (ex.: "Kwid") e o app reconhece entre os carros mais usados na Uber/99, usando as médias daquele modelo na Reserva do carro. Catálogo no código (`lib/metrics/vehicle-models.ts`): funciona offline e é testado; atualizar exige um deploy (automático no push).
+- Manutenção = plano de revisões da montadora ÷ km + desgaste (freios e suspensão, igual para todos). Pneus = 4 × preço médio ÷ 50 mil km. Fontes e limitações em `docs/custos.md`.
+- `cost_reference` passou a ter as médias por tipo (compacto, sedã, outro), `is_placeholder = false`; SUV segue placeholder.
+- Sem busca na internet em tempo real: preços de sites mudam de formato, não dá para validar automaticamente e o app precisa funcionar sem sinal.

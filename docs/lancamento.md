@@ -54,7 +54,7 @@ Marque cada item ao concluir. Itens com **(você)** dependem do dono do app; os 
 - [x] **E-mail próprio (SMTP)** — feito em 24/11/2026: domínio `kmmais.app.br` (Registro.br) verificado no Resend, Supabase enviando como `Km+ <nao-responda@kmmais.app.br>`, limite 30/h, modelo em português com código aplicado. Falta só `NEXT_PUBLIC_AUTH_OTP_CODE=true` na Vercel.
 - [x] **Domínio próprio** `kmmais.app.br` no Cloudflare (24/11/2026). Falta (você): trocar a URL do webhook no Mercado Pago para `https://kmmais.app.br/api/webhooks/mercadopago`.
 - [x] **Revisão jurídica** de `legal/termos.md` e `legal/privacidade.md` — feita (24/11/2026); marca RASCUNHO removida. Fornecedores atualizados: Cloudflare (hospedagem) e Resend (e-mail).
-- [ ] **Custos de referência** em `docs/custos.md`: revisar os placeholders e marcar `is_placeholder = false`. (você)
+- [x] **Custos de referência** (25/11/2026): pesquisa dos carros mais usados na Uber/99, médias por modelo no app (`lib/metrics/vehicle-models.ts`) e por tipo no banco. Só SUV continua placeholder. Ver `docs/custos.md`.
 - [x] **Mercado Pago produção** (24/11/2026): credenciais de produção no Cloudflare (checkout criado na conta real), webhook de produção em `https://kmmais.app.br/api/webhooks/mercadopago` com assinatura nova (simulação respondeu 200). Ainda vale renovar o token de teste que foi colado no chat.
 - [x] **Compra real** de R$ 17,90 por Pix e estorno (24/11/2026): aprovado → acesso liberado em 2 s; estorno → acesso revogado em segundos, ambos pelo webhook.
 - [x] **Logo e ícones:** o dono decidiu manter o wordmark "Km+" atual no lançamento (24/11/2026).
