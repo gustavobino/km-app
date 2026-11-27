@@ -76,7 +76,9 @@ test("registers the example day and the live total matches CLAUDE.md", async ({
   await addExpense(page, "Alimentação", "22");
   await expect(hero(page)).toContainText("R$ 243,50");
   await expect(
-    page.getByRole("button", { name: /Combustível, R\$ 85,00/ }),
+    page.getByRole("button", {
+      name: /^Combustível · 85,00 reais\. Editar ou remover/,
+    }),
   ).toBeVisible();
 
   await page.getByRole("button", { name: "Mais opções" }).click();

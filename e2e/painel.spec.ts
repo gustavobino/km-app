@@ -1,7 +1,7 @@
 import { expect, test } from "./support/fixtures";
 import type { Page } from "@playwright/test";
 import { addDays, monthRange, today, weekRange } from "../lib/dates";
-import { summarizeRange, variation } from "../lib/metrics/period";
+import { bars, summarizeRange, variation } from "../lib/metrics/period";
 import type { DayData } from "../lib/metrics/types";
 import { formatBRL } from "../lib/money";
 import {
@@ -119,6 +119,26 @@ test("today, week and month with the example numbers", async ({ page }) => {
     const s = summarizeRange(DATA, range, [], T);
     await expect(hero(page)).toContainText(formatBRL(s.netCents));
   }
+
+  // Tapping a week bar shows that week's value (and tapping again hides it).
+  const weekBar = bars("month", monthRange(T), DATA, [], T).find(
+    (b) => b.range.start <= T && T <= b.range.end,
+  )!;
+  const barButton = page.getByRole("button", {
+    name: new RegExp(`^${weekBar.longLabel}:`),
+  });
+  await expect(
+    page.getByText("Toque numa barra para ver o valor."),
+  ).toBeVisible();
+  await barButton.click();
+  await expect(barButton).toHaveAttribute("aria-pressed", "true");
+  await expect(hero(page)).toContainText(
+    `${formatBRL(weekBar.netCents)} no bolso · ganhos ${formatBRL(weekBar.grossCents)}`,
+  );
+  await barButton.click();
+  await expect(
+    page.getByText("Toque numa barra para ver o valor."),
+  ).toBeVisible();
 
   // Month goal: R$ 8.000.
   const month = summarizeRange(DATA, monthRange(T), [], T);

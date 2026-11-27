@@ -182,6 +182,12 @@ describe("bars", () => {
     ]);
     expect(b.map((x) => x.netCents)).toEqual([10000, 0, 30000, 0, 0, 0, 0]);
     expect(b.filter((x) => x.best).map((x) => x.longLabel)).toEqual(["quarta"]);
+    expect(b[2]).toMatchObject({
+      range: { start: "2026-11-25", end: "2026-11-25" },
+      grossCents: 30000,
+      future: false,
+    });
+    expect(b[5]!.future).toBe(true);
   });
 
   it("one bar per week in a month", () => {
@@ -206,6 +212,12 @@ describe("bars", () => {
       ["S6", 0],
     ]);
     expect(b.find((x) => x.best)?.longLabel).toBe("3ª semana");
+    expect(b[2]!.range).toEqual({ start: "2026-11-09", end: "2026-11-15" });
+    expect(b[0]!.range).toEqual({ start: "2026-11-01", end: "2026-11-01" });
+    expect(b[5]).toMatchObject({
+      range: { start: "2026-11-30", end: "2026-11-30" },
+      future: true,
+    });
   });
 
   it("no best bar when nothing was earned, no bars for a single day", () => {

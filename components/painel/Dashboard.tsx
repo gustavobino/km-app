@@ -38,6 +38,7 @@ import {
   summarizeRange,
   variation,
   type AppComparison,
+  type Bar,
   type GoalProgress,
   type Period,
 } from "@/lib/metrics/period";
@@ -88,6 +89,10 @@ export function Dashboard({
 }: Props) {
   const [todayDate] = useState<LocalDate>(() => today());
   const [period, setPeriod] = useState<Period>(readPeriod);
+  // Tapped bar ("S2", "Qua"…), remembered per period.
+  const [picked, setPicked] = useState<{ period: Period; key: string } | null>(
+    null,
+  );
 
   // Enough history for every period and its comparison: from the start of last month.
   const loadFrom = monthRange(addDays(monthRange(todayDate).start, -1)).start;
@@ -232,20 +237,39 @@ export function Dashboard({
             : ""}
         </p>
         {data.bars.length > 0 ? (
-          <DayBars
-            className="mt-3"
-            bars={data.bars.map((b) => ({
-              key: b.key,
-              label: b.label,
-              value: Math.max(0, b.netCents),
-              best: b.best,
-            }))}
-            label={
-              best
-                ? `Quanto sobrou por ${period === "week" ? "dia" : "semana"}. O melhor foi ${best.longLabel}, com ${formatBRL(best.netCents, { cents: false })}.`
-                : `Quanto sobrou por ${period === "week" ? "dia" : "semana"}: nada registrado ainda.`
-            }
-          />
+          <>
+            <DayBars
+              className="mt-3"
+              bars={data.bars.map((b) => ({
+                key: b.key,
+                label: b.label,
+                value: Math.max(0, b.netCents),
+                best: b.best,
+                ariaLabel: `${b.longLabel}: ${b.future ? "ainda não chegou" : formatBRL(b.netCents)}`,
+              }))}
+              label={
+                best
+                  ? `Quanto sobrou por ${period === "week" ? "dia" : "semana"}. O melhor foi ${best.longLabel}, com ${formatBRL(best.netCents, { cents: false })}. Toque numa barra para ver o valor.`
+                  : `Quanto sobrou por ${period === "week" ? "dia" : "semana"}: nada registrado ainda.`
+              }
+              selectedKey={picked?.period === period ? picked.key : null}
+              onSelect={(key) =>
+                setPicked((p) =>
+                  p?.period === period && p.key === key
+                    ? null
+                    : { period, key },
+                )
+              }
+            />
+            <BarDetail
+              bar={
+                picked?.period === period
+                  ? (data.bars.find((b) => b.key === picked.key) ?? null)
+                  : null
+              }
+              period={period}
+            />
+          </>
         ) : null}
         <Link
           href="/painel/lucro"
@@ -283,6 +307,36 @@ export function Dashboard({
       </Link>
       <EarningsReportCard userId={userId} platformSettings={platformSettings} />
     </Screen>
+  );
+}
+
+function BarDetail({ bar, period }: { bar: Bar | null; period: Period }) {
+  if (!bar)
+    return (
+      <p className="mt-2 text-[12px] font-semibold text-lime-text">
+        Toque numa barra para ver o valor.
+      </p>
+    );
+  const when =
+    period === "week"
+      ? formatLongDate(bar.range.start)
+      : `${bar.longLabel[0]!.toUpperCase()}${bar.longLabel.slice(1)} · ${formatRange(bar.range)}`;
+  return (
+    <div
+      aria-live="polite"
+      className="mt-2.5 rounded-[14px] bg-lime-track/40 px-3 py-2"
+    >
+      <div className="text-[13px] font-bold text-lime-text">{when}</div>
+      <div className="text-[15px] font-extrabold">
+        {bar.future
+          ? period === "week"
+            ? "Esse dia ainda não chegou."
+            : "Essa semana ainda não chegou."
+          : bar.grossCents === 0 && bar.netCents === 0
+            ? "Nada registrado."
+            : `${formatBRL(bar.netCents)} no bolso · ganhos ${formatBRL(bar.grossCents)}`}
+      </div>
+    </div>
   );
 }
 

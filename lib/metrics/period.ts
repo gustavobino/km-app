@@ -87,7 +87,12 @@ export type Bar = {
   key: string;
   label: string;
   longLabel: string;
+  /** Days the bar covers (for "tap a bar to see it"). */
+  range: DateRange;
   netCents: Cents;
+  grossCents: Cents;
+  /** Not lived yet. */
+  future: boolean;
   best: boolean;
 };
 
@@ -101,30 +106,39 @@ export function bars(
 ): Bar[] {
   let out: Omit<Bar, "best">[] = [];
   if (period === "week") {
-    out = eachDay(range).map((d) => ({
-      key: d,
-      label: formatWeekdayShort(d),
-      longLabel: formatWeekdayLong(d).toLowerCase(),
-      netCents:
+    out = eachDay(range).map((d) => {
+      const s =
         d > today
-          ? 0
-          : summarizeRange(days, { start: d, end: d }, settings, today)
-              .netCents,
-    }));
+          ? null
+          : summarizeRange(days, { start: d, end: d }, settings, today);
+      return {
+        key: d,
+        label: formatWeekdayShort(d),
+        longLabel: formatWeekdayLong(d).toLowerCase(),
+        range: { start: d, end: d },
+        netCents: s?.netCents ?? 0,
+        grossCents: s?.grossCents ?? 0,
+        future: d > today,
+      };
+    });
   } else if (period === "month") {
     let start = range.start;
     let n = 1;
     while (start <= range.end) {
       const week = weekRange(start);
       const end = week.end < range.end ? week.end : range.end;
+      const s =
+        start > today
+          ? null
+          : summarizeRange(days, { start, end }, settings, today);
       out.push({
         key: start,
         label: `S${n}`,
         longLabel: `${n}ª semana`,
-        netCents:
-          start > today
-            ? 0
-            : summarizeRange(days, { start, end }, settings, today).netCents,
+        range: { start, end },
+        netCents: s?.netCents ?? 0,
+        grossCents: s?.grossCents ?? 0,
+        future: start > today,
       });
       start = addDays(end, 1);
       n += 1;

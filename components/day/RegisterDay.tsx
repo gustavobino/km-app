@@ -352,14 +352,16 @@ export function RegisterDay({
                 key={x.key}
                 selected
                 removable
-                aria-label={`${EXPENSE_LABELS[x.category]}${x.label ? ` (${x.label})` : ""}, ${formatBRL(
-                  parseBRL(x.amount) ?? 0,
-                )}. Editar ou remover`}
                 aria-invalid={errors[`expense:${x.key}`] ? true : undefined}
                 onClick={() => setSheet({ entry: x, isNew: false })}
               >
                 {x.label || EXPENSE_LABELS[x.category]} ·{" "}
                 {formatBRL(parseBRL(x.amount) ?? 0, { symbol: false })}
+                {/* The spoken name starts with the visible text (WCAG 2.5.3). */}
+                <span className="sr-only">
+                  {x.label ? ` (${EXPENSE_LABELS[x.category]})` : ""} reais.
+                  Editar ou remover
+                </span>
               </Chip>
             ))}
             {chipCategories
