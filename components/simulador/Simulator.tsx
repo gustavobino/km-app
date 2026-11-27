@@ -97,12 +97,6 @@ function SimulatorForm({
       ? Math.round(base.avgHoursPerDay * 4) / 4
       : DEFAULT_HOURS);
   const routineDays = typicalDaysPerMonth ?? DEFAULT_DAYS;
-  const nowMonthly = currentMonthly(
-    base.netPerHourCents,
-    routineHours,
-    routineDays,
-  );
-
   const [target, setTarget] = useState(
     monthlyGoalCents ? toInputBRL(monthlyGoalCents).replace(/,00$/, "") : "",
   );
@@ -114,13 +108,24 @@ function SimulatorForm({
 
   const hoursMin = parseHours(hours);
   const daysNum = /^\d{1,2}$/.test(daysText.trim()) ? Number(daysText) : NaN;
+  const hoursPerDay = hoursMin != null ? hoursMin / 60 : NaN;
+  const daysPerMonth = daysNum > 0 && daysNum <= 31 ? daysNum : NaN;
+  const targetCents = parseBRL(target) ?? 0;
+  // What the chosen routine leaves per month at today's pace.
+  const nowMonthly = currentMonthly(
+    base.netPerHourCents,
+    hoursPerDay,
+    daysPerMonth,
+  );
   const result = simulate({
-    targetCents: parseBRL(target) ?? 0,
-    hoursPerDay: hoursMin != null ? hoursMin / 60 : NaN,
-    daysPerMonth: daysNum > 0 && daysNum <= 31 ? daysNum : NaN,
+    targetCents,
+    hoursPerDay,
+    daysPerMonth,
     baseNetPerHourCents: base.netPerHourCents,
     currentMonthlyCents: nowMonthly,
   });
+  const gap =
+    nowMonthly != null && targetCents > 0 ? targetCents - nowMonthly : null;
 
   const caption =
     base.daysWithHours === 0
@@ -136,148 +141,195 @@ function SimulatorForm({
     <Screen>
       <Title caption={caption} />
 
-      <Card className="grid grid-cols-2">
-        <div className="border-r border-divider px-4 py-3.5">
-          <CapsLabel>Hoje você sobra</CapsLabel>
-          <div className="mt-1 font-display text-[26px] font-extrabold">
-            {nowMonthly != null ? formatBRL(nowMonthly, { cents: false }) : "—"}
-          </div>
-          <div className="text-[13px] font-semibold text-muted">
-            {base.netPerHourCents != null
-              ? `${formatBRL(Math.round(base.netPerHourCents))} por hora`
-              : "registre dias com horas"}
-          </div>
-        </div>
-        <div className="px-4 py-3.5">
-          <label htmlFor={ids.target} className="block label-caps text-muted">
-            Quero chegar a
-          </label>
-          <div className="mt-1 flex items-baseline gap-1">
-            <span
-              aria-hidden="true"
-              className="text-[16px] font-bold text-muted"
-            >
-              R$
-            </span>
-            <input
-              id={ids.target}
-              inputMode="decimal"
-              autoComplete="off"
-              placeholder="0"
-              value={target}
-              aria-describedby={`${ids.target}-sufixo`}
-              onChange={(e) =>
-                setTarget(e.target.value.replace(/[^\d.,]/g, ""))
-              }
-              className="h-9 w-full min-w-0 bg-transparent font-display text-[26px] font-extrabold outline-none placeholder:text-muted/40"
-            />
-          </div>
-          <div
-            id={`${ids.target}-sufixo`}
-            className="text-[13px] font-semibold text-muted"
-          >
-            por mês
-          </div>
-        </div>
+      <Card
+        as="section"
+        aria-labelledby={`${ids.target}-1`}
+        className="px-4 py-3.5"
+      >
+        <Step n={1} id={`${ids.target}-1`}>
+          Seu ritmo
+        </Step>
+        {base.netPerHourCents != null ? (
+          <>
+            <div className="mt-1 font-display text-[30px] leading-tight font-extrabold">
+              {formatBRL(Math.round(base.netPerHourCents))}{" "}
+              <span className="text-[17px] text-muted">por hora</span>
+            </div>
+            <p className="text-[13px] font-semibold text-muted">
+              É o que sobra no bolso, em média, a cada hora rodada.
+            </p>
+          </>
+        ) : (
+          <p className="mt-1 text-[14px] font-semibold text-muted">
+            Registre alguns dias com as horas rodadas para o Km+ saber o seu
+            ritmo.
+          </p>
+        )}
       </Card>
 
-      <Card className="grid grid-cols-2">
-        <div className="border-r border-divider px-4 py-3.5">
-          <label htmlFor={ids.hours} className="block label-caps text-muted">
-            Horas por dia
-          </label>
-          <div className="mt-0.5 flex items-baseline gap-1.5">
-            <input
-              id={ids.hours}
-              inputMode="decimal"
-              value={hours}
-              onChange={(e) => setHours(e.target.value)}
-              className="h-touch w-16 bg-transparent font-display text-[30px] font-extrabold outline-none"
-            />
-            <span aria-hidden="true" className="font-bold text-muted">
-              h
-            </span>
+      <Card
+        as="section"
+        aria-labelledby={`${ids.hours}-2`}
+        className="px-4 pt-3.5 pb-3"
+      >
+        <Step n={2} id={`${ids.hours}-2`}>
+          Sua rotina
+        </Step>
+        <div className="mt-1 grid grid-cols-2">
+          <div className="border-r border-divider pr-3">
+            <label
+              htmlFor={ids.hours}
+              className="block text-[13px] font-bold text-muted"
+            >
+              Horas por dia
+            </label>
+            <div className="flex items-baseline gap-1.5">
+              <input
+                id={ids.hours}
+                inputMode="decimal"
+                value={hours}
+                onChange={(e) => setHours(e.target.value)}
+                className="h-touch w-16 bg-transparent font-display text-[30px] font-extrabold outline-none"
+              />
+              <span aria-hidden="true" className="font-bold text-muted">
+                h
+              </span>
+            </div>
+          </div>
+          <div className="pl-4">
+            <label
+              htmlFor={ids.days}
+              className="block text-[13px] font-bold text-muted"
+            >
+              Dias por mês
+            </label>
+            <div className="flex items-baseline gap-1.5">
+              <input
+                id={ids.days}
+                inputMode="numeric"
+                value={daysText}
+                onChange={(e) =>
+                  setDaysText(e.target.value.replace(/\D/g, "").slice(0, 2))
+                }
+                className="h-touch w-12 bg-transparent font-display text-[30px] font-extrabold outline-none"
+              />
+              <span aria-hidden="true" className="font-bold text-muted">
+                dias
+              </span>
+            </div>
           </div>
         </div>
-        <div className="px-4 py-3.5">
-          <label htmlFor={ids.days} className="block label-caps text-muted">
-            Dias por mês
-          </label>
-          <div className="mt-0.5 flex items-baseline gap-1.5">
-            <input
-              id={ids.days}
-              inputMode="numeric"
-              value={daysText}
-              onChange={(e) =>
-                setDaysText(e.target.value.replace(/\D/g, "").slice(0, 2))
-              }
-              className="h-touch w-12 bg-transparent font-display text-[30px] font-extrabold outline-none"
-            />
-            <span aria-hidden="true" className="font-bold text-muted">
-              dias
-            </span>
-          </div>
+        {nowMonthly != null ? (
+          <p className="mt-1 border-t border-divider pt-2 text-[14px] font-semibold">
+            Nesse ritmo e nessa rotina, sobram cerca de{" "}
+            <strong className="font-extrabold">
+              {formatBRL(nowMonthly, { cents: false })} por mês
+            </strong>
+            .
+          </p>
+        ) : null}
+      </Card>
+
+      <Card
+        as="section"
+        aria-labelledby={`${ids.target}-3`}
+        className="px-4 py-3.5"
+      >
+        <Step n={3} id={`${ids.target}-3`}>
+          Sua meta
+        </Step>
+        <label
+          htmlFor={ids.target}
+          className="mt-1 block text-[13px] font-bold text-muted"
+        >
+          Quanto você quer que sobre por mês
+        </label>
+        <div className="flex items-baseline gap-1">
+          <span aria-hidden="true" className="text-[16px] font-bold text-muted">
+            R$
+          </span>
+          <input
+            id={ids.target}
+            inputMode="decimal"
+            autoComplete="off"
+            placeholder="0"
+            value={target}
+            onChange={(e) => setTarget(e.target.value.replace(/[^\d.,]/g, ""))}
+            className="h-touch w-full min-w-0 bg-transparent font-display text-[30px] font-extrabold outline-none placeholder:text-muted/40"
+          />
         </div>
+        {gap != null ? (
+          <p className="text-[13px] font-semibold text-muted">
+            {gap > 0
+              ? `${formatBRL(gap, { cents: false })} a mais do que sobra hoje.`
+              : "Você já chega lá no seu ritmo de hoje."}
+          </p>
+        ) : null}
       </Card>
 
       <HeroCard aria-live="polite" className="px-5 pt-4.5 pb-5">
         <CapsLabel as="h2" onLime>
-          Para chegar lá, sobrar por dia
+          O que precisa
         </CapsLabel>
-        <div className="mt-0.5 font-display text-[56px] leading-[1.05] font-extrabold tracking-hero">
-          {result ? formatBRL(result.perDayCents) : "—"}
-        </div>
-        <p className="mt-1 text-[15px] font-bold">
-          {result
-            ? `${formatBRL(result.perHourCents)} por hora`
-            : "Preencha a meta, as horas e os dias"}
-          {pct != null ? (
-            <span className="font-bold text-lime-text">
-              {" · "}
-              {pct > 0
-                ? `${pct}% acima do seu ritmo`
-                : pct === 0
-                  ? "no seu ritmo atual"
-                  : "abaixo do seu ritmo atual"}
-            </span>
-          ) : null}
-        </p>
+        {!result ? (
+          <p className="mt-1 text-[16px] font-bold">
+            Preencha a rotina e a meta para ver o resultado.
+          </p>
+        ) : gap != null && gap <= 0 ? (
+          <p className="mt-1 text-[20px] leading-snug font-extrabold">
+            Mantendo o seu ritmo e essa rotina, você chega à meta.
+          </p>
+        ) : (
+          <>
+            <p className="mt-1 text-[15px] font-bold text-lime-text">
+              Para sobrar {formatBRL(targetCents, { cents: false })} por mês,
+              cada hora precisa deixar
+            </p>
+            <div className="font-display text-[48px] leading-[1.05] font-extrabold tracking-hero">
+              {formatBRL(result.perHourCents)}
+            </div>
+            <p className="mt-1 text-[15px] font-bold">
+              {pct != null && pct > 0 ? `${pct}% a mais que hoje · ` : ""}
+              {formatBRL(result.perDayCents)} por dia
+            </p>
+          </>
+        )}
       </HeroCard>
 
-      {result?.paths ? (
+      {result?.paths && gap != null && gap > 0 ? (
         <Card className="px-4 pt-3.5 pb-3">
           <CapsLabel as="h2" className="mb-1">
-            Caminhos para chegar lá
+            Ou mude a rotina
           </CapsLabel>
           <ul>
             <PathRow
-              title="Só mais horas"
-              note="no seu ritmo de hoje"
+              title="Rodar mais horas"
+              note={`no ritmo de hoje, ${daysNum} dias no mês`}
               path={result.paths.onlyMoreHours}
             />
             <PathRow
               title={`Ganhar ${Math.round(SIMULATOR.rateBoost * 100)}% mais por hora`}
-              note="com os melhores horários"
+              note="rodando nos horários que pagam melhor"
               path={result.paths.betterRate}
             />
             <PathRow
-              title={`Isso + ${SIMULATOR.extraDays} dias a mais`}
-              note="o caminho mais equilibrado"
+              title={`${Math.round(SIMULATOR.rateBoost * 100)}% mais por hora e ${daysNum + SIMULATOR.extraDays} dias no mês`}
+              note="o caminho mais leve"
               path={result.paths.betterRateMoreDays}
               highlight
             />
           </ul>
           {result.paths.halfway ? (
             <p className="mt-2 rounded-segment-item bg-bg px-3 py-2.5 text-[13px] font-semibold text-note-text">
-              Sem pressa: no meio do caminho,{" "}
+              Sem pressa: uma meta intermediária de{" "}
               {formatBRL(result.paths.halfway.targetCents, { cents: false })}{" "}
-              por mês pedem{" "}
-              {formatHoursFromDecimal(result.paths.halfway.hoursPerDay)} por
-              dia.
+              por mês pede{" "}
+              {formatHoursFromDecimal(result.paths.halfway.hoursPerDay)} por dia
+              no ritmo de hoje.
             </p>
           ) : null}
         </Card>
-      ) : result ? (
+      ) : result && base.netPerHourCents == null ? (
         <Card className="px-4 py-3.5">
           <p className="text-[14px] font-semibold text-muted">
             Registre alguns dias com as horas rodadas para ver os caminhos até a
@@ -290,6 +342,28 @@ function SimulatorForm({
         Estimativa baseada no seu histórico, não é garantia de ganho.
       </p>
     </Screen>
+  );
+}
+
+function Step({
+  n,
+  id,
+  children,
+}: {
+  n: number;
+  id: string;
+  children: string;
+}) {
+  return (
+    <h2 id={id} className="flex items-center gap-2">
+      <span
+        aria-hidden="true"
+        className="flex size-5.5 items-center justify-center rounded-full bg-ink text-[12px] font-extrabold text-lime"
+      >
+        {n}
+      </span>
+      <span className="label-caps text-muted">{children}</span>
+    </h2>
   );
 }
 
