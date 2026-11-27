@@ -11,29 +11,57 @@ import type { TodayGoal } from "@/lib/metrics/period";
 import { formatBRL, parseBRL, toInputBRL } from "@/lib/money";
 
 type Props = {
+  /** Today's goal, set by the driver (null = not set yet today). */
   goal: TodayGoal | null;
+  /** What keeps the month goal on track (offered as a suggestion). */
+  suggestionCents: number | null;
   monthGoalCents: number | null;
-  /** Saves today's goal set by hand (null = back to the automatic one). */
+  /** Saves today's goal (null removes it). */
   onChange: (cents: number | null) => void;
 };
 
 const brl = (c: number) => formatBRL(c, { cents: false });
+const wholeReais = (c: number) =>
+  toInputBRL(Math.round(c / 100) * 100).replace(/,00$/, "");
 
-/** "Meta de hoje" on Registrar, with "Ajustar" to set it by hand for today. */
-export function TodayGoalCard({ goal, monthGoalCents, onChange }: Props) {
-  const [editing, setEditing] = useState(false);
-  const edit = (
-    <Button
-      variant="ghost"
-      className="-mr-2 h-touch px-2 text-[14px] underline underline-offset-4"
-      onClick={() => setEditing(true)}
+/** Flag on the road: "no goal yet" illustration (stroke, ink on lime). */
+function GoalIllustration() {
+  return (
+    <svg
+      aria-hidden="true"
+      width="56"
+      height="56"
+      viewBox="0 0 56 56"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="shrink-0"
     >
-      {goal ? "Ajustar" : "Definir"}
-    </Button>
+      <path d="M6 48c8-3 14-3 22 0s14 3 22 0" />
+      <path d="M20 46V10" />
+      <path d="M20 11h20l-5 7 5 7H20" fill="rgba(16,24,40,.12)" />
+      <circle cx="20" cy="9" r="1.5" fill="currentColor" />
+    </svg>
   );
+}
+
+/**
+ * "Meta de hoje" on Registrar. It starts empty every day: the driver chooses
+ * it (the month goal only suggests a value).
+ */
+export function TodayGoalCard({
+  goal,
+  suggestionCents,
+  monthGoalCents,
+  onChange,
+}: Props) {
+  const [editing, setEditing] = useState(false);
   const sheet = editing ? (
     <TodayGoalSheet
       goal={goal}
+      suggestionCents={suggestionCents}
       monthGoalCents={monthGoalCents}
       onClose={() => setEditing(false)}
       onSave={(v) => {
@@ -45,29 +73,24 @@ export function TodayGoalCard({ goal, monthGoalCents, onChange }: Props) {
 
   if (!goal)
     return (
-      <Card className="flex items-center justify-between px-4 py-1.5">
-        <span className="text-[14px] font-bold text-muted">
-          Quer uma meta para hoje?
-        </span>
-        {edit}
-        {sheet}
-      </Card>
-    );
-
-  if (goal.monthReached)
-    return (
       <HeroCard
         as="div"
         radius="hero-md"
-        className="flex items-center justify-between gap-3 px-4.5 py-3.5"
+        className="flex flex-col gap-3 px-4.5 pt-4 pb-4"
+        aria-label="Meta de hoje"
       >
-        <div>
-          <CapsLabel onLime>Meta do mês batida</CapsLabel>
-          <p className="mt-1 text-[15px] font-bold">
-            O que entrar hoje é extra no bolso.
-          </p>
+        <div className="flex items-center gap-3.5">
+          <GoalIllustration />
+          <div>
+            <CapsLabel onLime>Meta de hoje</CapsLabel>
+            <p className="mt-0.5 text-[16px] leading-snug font-extrabold">
+              Você ainda não definiu uma meta para hoje
+            </p>
+          </div>
         </div>
-        {edit}
+        <Button block className="h-12" onClick={() => setEditing(true)}>
+          Definir meta de hoje
+        </Button>
         {sheet}
       </HeroCard>
     );
@@ -86,15 +109,13 @@ export function TodayGoalCard({ goal, monthGoalCents, onChange }: Props) {
             {brl(goal.targetCents)}
           </div>
         </div>
-        <div className="flex flex-col items-end">
-          <p className="pt-0.5 text-right text-[14px] font-bold">
-            {goal.reachedToday
-              ? goal.todayNetCents > goal.targetCents
-                ? `Batida! +${brl(goal.todayNetCents - goal.targetCents)}`
-                : "Batida!"
-              : `Faltam ${brl(goal.missingCents)}`}
-          </p>
-        </div>
+        <p className="pt-0.5 text-right text-[14px] font-bold">
+          {goal.reachedToday
+            ? goal.todayNetCents > goal.targetCents
+              ? `Batida! +${brl(goal.todayNetCents - goal.targetCents)}`
+              : "Batida!"
+            : `Faltam ${brl(goal.missingCents)}`}
+        </p>
       </div>
       <ProgressBar
         onLime
@@ -104,11 +125,15 @@ export function TodayGoalCard({ goal, monthGoalCents, onChange }: Props) {
       />
       <div className="mt-0.5 flex items-center justify-between">
         <p className="text-[12px] font-semibold text-lime-text">
-          {goal.custom
-            ? "Meta que você escolheu para hoje."
-            : "Para manter a meta do mês em dia."}
+          Vale só para hoje.
         </p>
-        {edit}
+        <Button
+          variant="ghost"
+          className="-mr-2 h-touch px-2 text-[14px] underline underline-offset-4"
+          onClick={() => setEditing(true)}
+        >
+          Ajustar
+        </Button>
       </div>
       {sheet}
     </HeroCard>
@@ -117,21 +142,19 @@ export function TodayGoalCard({ goal, monthGoalCents, onChange }: Props) {
 
 function TodayGoalSheet({
   goal,
+  suggestionCents,
   monthGoalCents,
   onClose,
   onSave,
 }: {
   goal: TodayGoal | null;
+  suggestionCents: number | null;
   monthGoalCents: number | null;
   onClose: () => void;
   onSave: (cents: number | null) => void;
 }) {
   const id = useId();
-  const [value, setValue] = useState(
-    goal && goal.targetCents > 0
-      ? toInputBRL(Math.round(goal.targetCents / 100) * 100).replace(/,00$/, "")
-      : "",
-  );
+  const [value, setValue] = useState(goal ? wholeReais(goal.targetCents) : "");
   const [error, setError] = useState<string | null>(null);
 
   return (
@@ -162,22 +185,38 @@ function TodayGoalSheet({
             autoFocus
           />
         </Card>
+        {suggestionCents && suggestionCents > 0 ? (
+          <button
+            type="button"
+            onClick={() => {
+              setValue(wholeReais(suggestionCents));
+              setError(null);
+            }}
+            className="flex min-h-touch items-center justify-between gap-3 rounded-card border border-border bg-surface px-4 py-2 text-left"
+          >
+            <span className="text-[13px] font-semibold text-muted">
+              Sugestão para manter a meta do mês
+              {monthGoalCents ? ` (${brl(monthGoalCents)})` : ""} em dia
+            </span>
+            <span className="text-[16px] font-extrabold whitespace-nowrap">
+              {brl(suggestionCents)}
+            </span>
+          </button>
+        ) : null}
         {error ? (
           <p role="alert" className="text-[14px] font-bold">
             {error}
           </p>
         ) : null}
         <p className="text-[13px] font-semibold text-muted">
-          {monthGoalCents
-            ? `Sem ajuste, a meta de hoje vem da sua meta do mês (${brl(monthGoalCents)}). O ajuste vale só para hoje.`
-            : "Vale só para hoje. Com uma meta do mês, o Km+ calcula a meta de cada dia sozinho."}
+          A meta vale só para hoje. Amanhã o cartão começa vazio de novo.
         </p>
         <Button type="submit" block>
           Salvar meta de hoje
         </Button>
-        {goal?.custom && monthGoalCents ? (
+        {goal ? (
           <Button variant="secondary" block onClick={() => onSave(null)}>
-            Voltar para a meta automática
+            Tirar a meta de hoje
           </Button>
         ) : null}
         <Link

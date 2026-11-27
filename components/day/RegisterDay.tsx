@@ -267,13 +267,20 @@ export function RegisterDay({
       netBeforeToday !== undefined &&
       goalOverride !== undefined ? (
         <TodayGoalCard
-          goal={todayGoal(
-            monthlyGoalCents,
-            netBeforeToday,
-            summary.netCents,
-            todayDate,
-            goalOverride,
-          )}
+          goal={
+            goalOverride
+              ? todayGoal(null, 0, summary.netCents, todayDate, goalOverride)
+              : null
+          }
+          suggestionCents={(() => {
+            const auto = todayGoal(
+              monthlyGoalCents,
+              netBeforeToday,
+              0,
+              todayDate,
+            );
+            return auto && !auto.monthReached ? auto.targetCents : null;
+          })()}
           monthGoalCents={monthlyGoalCents}
           onChange={(cents) => {
             const db = localDb();

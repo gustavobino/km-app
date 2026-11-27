@@ -1,7 +1,6 @@
 import { expect, test } from "./support/fixtures";
 import type { Page } from "@playwright/test";
 import { addDays, remainingDaysInMonth, today } from "../lib/dates";
-import { formatBRL } from "../lib/money";
 import {
   adminClient,
   createTestUser,
@@ -380,65 +379,51 @@ test.describe("zeroing a day", () => {
   });
 });
 
-test("shows today's goal from the month goal and updates while typing", async ({
+test("today's goal starts empty; the month goal only suggests a value", async ({
   page,
 }) => {
   await setProfile(user, { monthly_goal_cents: 300000 });
   await signIn(page, user, "/registrar");
-  // No days before today: R$ 3.000 spread over the days left (today included).
-  const target = Math.round(300000 / remainingDaysInMonth(today()));
   const card = page.getByLabel("Meta de hoje", { exact: true });
-  await expect(card).toContainText(formatBRL(target, { cents: false }));
-  await expect(card).toContainText(
-    `Faltam ${formatBRL(target, { cents: false })}`,
-  );
-
-  await page.getByLabel("Ganho Uber, em reais").fill("50");
-  await expect(card).toContainText(
-    `Faltam ${formatBRL(target - 5000, { cents: false })}`,
-  );
-  await page
-    .getByLabel("Ganho Uber, em reais")
-    .fill(String(Math.ceil(target / 100) + 10));
-  await expect(card).toContainText("Batida!");
-});
-
-test("today's goal can be set by hand and go back to automatic", async ({
-  page,
-}) => {
-  await signIn(page, user, "/registrar");
-  // No month goal: a discreet invitation.
-  await expect(page.getByText("Quer uma meta para hoje?")).toBeVisible();
-  await page.getByRole("button", { name: "Definir" }).click();
+  await expect(card).toContainText("Você ainda não definiu uma meta para hoje");
+  await card.getByRole("button", { name: "Definir meta de hoje" }).click();
   const sheet = page.getByRole("dialog", { name: "Meta de hoje" });
+  // No days before today: R$ 3.000 spread over the days left (today included).
+  const suggestion = Math.round(300000 / remainingDaysInMonth(today()));
+  await sheet
+    .getByRole("button", { name: /Sugestão para manter a meta do mês/ })
+    .click();
+  await expect(sheet.getByLabel("Quanto você quer que sobre hoje")).toHaveValue(
+    String(Math.round(suggestion / 100)),
+  );
   await sheet.getByLabel("Quanto você quer que sobre hoje").fill("300");
   await sheet.getByRole("button", { name: "Salvar meta de hoje" }).click();
-  const card = page.getByLabel("Meta de hoje", { exact: true });
   await expect(card).toContainText("R$ 300");
-  await expect(card).toContainText("Meta que você escolheu para hoje.");
+  await expect(card).toContainText("Faltam R$ 300");
   await page.getByLabel("Ganho Uber, em reais").fill("100");
   await expect(card).toContainText("Faltam R$ 200");
+  await page.getByLabel("Ganho Uber, em reais").fill("320");
+  await expect(card).toContainText("Batida! +R$ 20");
 
-  // Kept on the device after reloading.
+  // Kept on the device after reloading; can be removed.
   await page.reload();
-  await expect(page.getByLabel("Meta de hoje", { exact: true })).toContainText(
-    "R$ 300",
-  );
+  await expect(card).toContainText("R$ 300");
+  await card.getByRole("button", { name: "Ajustar" }).click();
+  await sheet.getByRole("button", { name: "Tirar a meta de hoje" }).click();
+  await expect(card).toContainText("Você ainda não definiu uma meta para hoje");
+});
 
-  // With a month goal, "Voltar para a meta automática" removes the manual one.
-  await setProfile(user, { monthly_goal_cents: 300000 });
-  await page.reload();
-  await page.getByRole("button", { name: "Ajustar" }).click();
-  await sheet
-    .getByRole("button", { name: "Voltar para a meta automática" })
-    .click();
-  const target = Math.round(300000 / remainingDaysInMonth(today()));
-  await expect(page.getByLabel("Meta de hoje", { exact: true })).toContainText(
-    formatBRL(target, { cents: false }),
-  );
-  await expect(page.getByLabel("Meta de hoje", { exact: true })).toContainText(
-    "Para manter a meta do mês em dia.",
-  );
+test("today's goal also works without a month goal", async ({ page }) => {
+  await signIn(page, user, "/registrar");
+  const card = page.getByLabel("Meta de hoje", { exact: true });
+  await card.getByRole("button", { name: "Definir meta de hoje" }).click();
+  const sheet = page.getByRole("dialog", { name: "Meta de hoje" });
+  await expect(sheet.getByRole("button", { name: /Sugestão/ })).toHaveCount(0);
+  await sheet.getByRole("button", { name: "Salvar meta de hoje" }).click();
+  await expect(sheet.getByRole("alert")).toContainText("Informe um valor");
+  await sheet.getByLabel("Quanto você quer que sobre hoje").fill("250");
+  await sheet.getByRole("button", { name: "Salvar meta de hoje" }).click();
+  await expect(card).toContainText("R$ 250");
 });
 
 test("after closing the day, invites to turn on the reminder (dismissible)", async ({
